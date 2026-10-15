@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#1c1f30">
+<title>Smart MRF Digital Twin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   Smart MRF Digital Twin — dark cyberpunk / terminal theme
+   Visual-only restyle. IDs, classes, data hooks and the script
+   are untouched; legacy colour variables are kept because the
+   script references var(--plastic) etc. at runtime.
+   ========================================================== */
+:root{
+  color-scheme:dark;
+
+  /* spacing scale (4pt / 8pt) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px;
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+
+  /* surfaces + text */
+  --bg:#1c1f30; --bg-deep:#11131f;
+  --surface:rgba(255,255,255,.045); --surface-hi:rgba(255,255,255,.085);
+  --line:rgba(255,255,255,.12); --line-strong:rgba(255,255,255,.24);
+  --ink:#e9ecff; --muted:#a3abd0;
+
+  /* neon accents */
+  --cyan:#00f2fe; --purple:#bd00ff; --pink:#ff007a; --green:#00ff88; --gold:#d4af37;
+
+  /* names the script / SVG rely on */
+  --concrete:var(--bg); --panel:#171a2b; --belt:#0b0d1a; --door:#3b4478;
+  --plastic:#00f2fe; --paper:#d4af37; --glass:#00ff88; --metal:#bd00ff; --hazardous:#ff007a;
+
+  --display:"Orbitron","Arial Narrow",Arial,sans-serif;
+  --body:"Share Tech Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+::selection{background:rgba(189,0,255,.55);color:#fff}
+
+body{
+  margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(900px 520px at 10% -10%,rgba(189,0,255,.17),transparent 60%),
+    radial-gradient(800px 520px at 100% 0%,rgba(0,242,254,.12),transparent 60%),
+    radial-gradient(700px 500px at 50% 115%,rgba(255,0,122,.09),transparent 60%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:40px 40px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 30%,transparent 85%);
+  mask-image:radial-gradient(ellipse at center,#000 30%,transparent 85%);
+}
+button,input{font:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s4);
+  padding:var(--s4) clamp(16px,3vw,40px);
+  background:rgba(17,19,31,.72);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 1px 0 rgba(0,242,254,.15),0 8px 32px rgba(0,0,0,.35);
+}
+header h1{
+  margin:0;font-family:var(--display);font-weight:800;font-size:clamp(16px,2.2vw,24px);letter-spacing:.14em;text-transform:uppercase;line-height:1.2;
+  background:linear-gradient(90deg,var(--cyan),var(--purple) 60%,var(--pink));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+header h1::before{
+  content:"";display:inline-block;width:12px;height:12px;margin-right:var(--s3);vertical-align:middle;border-radius:3px;
+  background:var(--cyan);box-shadow:0 0 12px var(--cyan),0 0 24px rgba(0,242,254,.5);
+}
+#status{
+  display:inline-flex;align-items:center;gap:var(--s2);padding:6px var(--s4);border-radius:999px;
+  font-size:13px;letter-spacing:.06em;color:var(--muted);background:var(--surface);border:1px solid var(--line);
+  transition:color .2s,border-color .2s,background .2s;
+}
+#status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+#status.ok{color:var(--green);border-color:rgba(0,255,136,.45);background:rgba(0,255,136,.08)}
+#status.bad{color:#ff5fa2;border-color:rgba(255,0,122,.5);background:rgba(255,0,122,.1)}
+
+/* ---------- hazard banner ---------- */
+#alert{
+  display:none;margin:0;padding:var(--s3) clamp(16px,3vw,40px);
+  background-color:#9c0a45;border-bottom:1px solid var(--pink);box-shadow:0 0 28px rgba(255,0,122,.45);
+  color:#fff;font-family:var(--display);font-size:clamp(13px,1.4vw,16px);font-weight:600;letter-spacing:.06em;line-height:1.5;
+  animation:flash 1s steps(2,jump-none) infinite;
+}
+#alert.show{display:block}
+@keyframes flash{50%{background-color:#6d052f}}
+
+/* ---------- layout (full width) ---------- */
+main{
+  display:grid;grid-template-columns:minmax(340px,32%) minmax(0,1fr);gap:var(--s6);align-items:start;
+  width:100%;padding:var(--s6) clamp(16px,3vw,40px) var(--s10);
+}
+@media (max-width:1000px){main{grid-template-columns:minmax(0,1fr)}}
+.right{display:flex;flex-direction:column;gap:var(--s6);min-width:0}
+
+section{
+  position:relative;padding:var(--s6);border:1px solid var(--line);border-radius:var(--r-lg);
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:border-color .25s,box-shadow .25s;
+}
+section:hover{border-color:rgba(0,242,254,.32);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 32px rgba(0,242,254,.08),inset 0 1px 0 rgba(255,255,255,.08)}
+section::before{
+  content:"";position:absolute;top:0;left:var(--s6);right:var(--s6);height:2px;border-radius:0 0 2px 2px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink));opacity:.85;
+}
+h2{
+  margin:0 0 var(--s4);font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);
+}
+h2::before{content:"//";content:"//" / "";margin-right:var(--s2);color:var(--purple)}
+
+/* ---------- intake ---------- */
+#drop{
+  display:block;padding:var(--s8) var(--s4);text-align:center;cursor:pointer;
+  border:1.5px dashed rgba(0,242,254,.45);border-radius:var(--r-md);background:rgba(0,242,254,.04);
+  transition:transform .2s ease,border-color .2s,background .2s,box-shadow .2s;
+}
+#drop:hover{transform:translateY(-2px);border-color:var(--cyan);background:rgba(0,242,254,.09);box-shadow:0 0 24px rgba(0,242,254,.18)}
+#drop.over{border-style:solid;border-color:var(--green);background:rgba(0,255,136,.1);box-shadow:0 0 32px rgba(0,255,136,.3)}
+#drop strong{display:block;margin-bottom:var(--s2);font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.1em;line-height:1.5;text-transform:uppercase;color:var(--ink)}
+#drop span{color:var(--muted);font-size:13px}
+#imageInput{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+#drop:focus-within{outline:2px solid var(--cyan);outline-offset:3px}
+
+.row{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin-top:var(--s4)}
+
+button{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);min-height:40px;padding:var(--s2) var(--s4);
+  border:1px solid rgba(0,242,254,.5);border-radius:var(--r-sm);background:rgba(0,242,254,.07);color:var(--cyan);
+  font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease;
+}
+button:hover:not(:disabled){transform:translateY(-2px);background:rgba(0,242,254,.16);box-shadow:0 6px 20px rgba(0,242,254,.25)}
+button:active:not(:disabled){transform:translateY(0);box-shadow:none}
+button:disabled{opacity:.4;cursor:not-allowed}
+
+#camStart{border-color:transparent;background:linear-gradient(135deg,var(--cyan),var(--green));color:#07101c;box-shadow:0 4px 18px rgba(0,242,254,.3)}
+#camStart:hover:not(:disabled){background:linear-gradient(135deg,var(--cyan),var(--green));box-shadow:0 8px 28px rgba(0,242,254,.5)}
+#camSnap{border-color:rgba(189,0,255,.65);background:rgba(189,0,255,.12);color:#e3a8ff}
+#camSnap:hover:not(:disabled){background:rgba(189,0,255,.26);box-shadow:0 6px 20px rgba(189,0,255,.35)}
+#camStop,#reset{border-color:rgba(255,0,122,.6);background:rgba(255,0,122,.1);color:#ff7ab8}
+#camStop:hover:not(:disabled),#reset:hover:not(:disabled){background:rgba(255,0,122,.22);box-shadow:0 6px 20px rgba(255,0,122,.35)}
+
+label.inline{display:flex;gap:var(--s2);align-items:center;padding:0 var(--s2);font-size:13px;color:var(--muted);cursor:pointer}
+label.inline input{width:16px;height:16px;margin:0;accent-color:var(--cyan)}
+label.inline:has(input:disabled){opacity:.5;cursor:not-allowed}
+
+.slider{width:100%;margin-top:var(--s5)}
+.slider div{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted)}
+.slider output{font-family:var(--display);font-size:13px;font-weight:600;color:var(--cyan)}
+.slider input{width:100%;margin:var(--s2) 0 0;height:24px;background:transparent;cursor:pointer;accent-color:var(--cyan);-webkit-appearance:none;appearance:none}
+.slider input::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shadow:0 0 10px rgba(0,242,254,.3)}
+.slider input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-6px;border-radius:50%;background:#fff;border:2px solid var(--cyan);box-shadow:0 0 12px var(--cyan);transition:transform .15s ease}
+.slider input:hover::-webkit-slider-thumb{transform:scale(1.15)}
+.slider input::-moz-range-track{height:6px;border-radius:999px;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shadow:0 0 10px rgba(0,242,254,.3)}
+.slider input::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--cyan);box-shadow:0 0 12px var(--cyan)}
+
+#view{
+  position:relative;margin-top:var(--s5);min-height:220px;display:grid;place-items:center;overflow:hidden;
+  background:var(--bg-deep);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:inset 0 0 40px rgba(0,0,0,.5);
+}
+#view::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px);
+}
+#view img,#view video{display:block;max-width:100%;max-height:340px;object-fit:contain}
+#view #video{display:none}   /* script toggles this inline when the camera starts/stops */
+#view .empty{padding:var(--s6);text-align:center;color:var(--muted)}
+#busy{
+  position:absolute;inset:0;z-index:3;display:none;place-items:center;text-align:center;
+  background:rgba(17,19,31,.84);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  color:var(--cyan);font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+}
+#busy.show{display:grid}
+.spinner{
+  width:36px;height:36px;margin:0 auto var(--s3);border-radius:50%;
+  border:3px solid rgba(0,242,254,.2);border-top-color:var(--cyan);border-right-color:var(--purple);
+  box-shadow:0 0 16px rgba(0,242,254,.4);animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#meta{margin-top:var(--s3);min-height:21px;color:var(--muted);font-size:13px}
+
+/* ---------- digital twin (SVG) ---------- */
+#twin{
+  display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:var(--r-md);background-color:#0e1020;
+  background-image:linear-gradient(rgba(0,242,254,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,242,254,.05) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+#twin text{font-family:var(--display);fill:var(--ink)}
+#twin > rect:not(.door){fill:#0b0d1a;stroke:rgba(0,242,254,.4);stroke-width:1.5}
+#twin > circle{fill:#0b0d1a;stroke:var(--cyan);stroke-width:2;filter:drop-shadow(0 0 4px rgba(0,242,254,.6))}
+.belt-dash{stroke:var(--cyan);stroke-opacity:.7;stroke-width:2;stroke-dasharray:10 14;animation:belt 1s linear infinite}
+@keyframes belt{to{stroke-dashoffset:-24}}
+.door{fill:var(--door);stroke:var(--cyan);stroke-width:1.5;transform-box:fill-box;transform-origin:0 0;transition:transform .18s ease-out}
+.door.open{transform:rotate(78deg)}
+
+/* falling items (first <g>) */
+#twin > g:first-of-type > rect{stroke:rgba(255,255,255,.9);stroke-width:1.5;filter:drop-shadow(0 0 5px rgba(255,255,255,.55))}
+
+/* each bin group carries its own accent colour */
+#twin > g:nth-of-type(2){--c:var(--plastic)}
+#twin > g:nth-of-type(3){--c:var(--paper)}
+#twin > g:nth-of-type(4){--c:var(--glass)}
+#twin > g:nth-of-type(5){--c:var(--metal)}
+#twin > g:nth-of-type(6){--c:var(--hazardous)}
+.bin-shell{fill:rgba(255,255,255,.04);stroke:var(--c,var(--line-strong));stroke-width:2;filter:drop-shadow(0 0 5px var(--c,transparent))}
+.bin-shell.alert{animation:binflash .6s steps(2,jump-none) infinite}
+@keyframes binflash{50%{stroke:#ffd1e6;stroke-width:5;filter:drop-shadow(0 0 16px var(--hazardous))}}
+.bin-fill{transition:height .35s ease-out,y .35s ease-out;filter:drop-shadow(0 0 6px var(--c,transparent))}
+#twin .bin-name{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;fill:var(--muted)}
+#twin .bin-count{font-size:20px;font-weight:700;fill:var(--c,var(--ink))}
+
+/* ---------- counters + log ---------- */
+.head-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--s3);margin-bottom:var(--s4)}
+.head-row h2{margin:0}
+#tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:var(--s3);margin:var(--s5) 0 var(--s6)}
+.tile{
+  padding:var(--s3) var(--s4);border:1px solid var(--line);border-left-width:4px;border-radius:var(--r-md);background:var(--surface);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.tile:hover{transform:translateY(-3px);background:var(--surface-hi);box-shadow:0 10px 24px rgba(0,0,0,.4)}
+.tile b{display:block;font-family:var(--display);font-size:clamp(24px,2.4vw,32px);font-weight:700;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
+.tile span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tile.total{background:linear-gradient(135deg,rgba(0,242,254,.18),rgba(189,0,255,.18));border-color:rgba(0,242,254,.4);border-left-color:var(--cyan)}
+.tile.total span{color:#c9d0f0}
+
+#logwrap{
+  max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(11,13,26,.55);
+  scrollbar-width:thin;scrollbar-color:rgba(0,242,254,.4) transparent;
+}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:var(--s2) var(--s4);border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap}
+th{
+  position:sticky;top:0;z-index:1;background:#14172a;border-bottom:1px solid rgba(0,242,254,.35);
+  font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);
+}
+tbody tr{transition:background .15s;animation:rowin .5s ease-out}
+tbody tr:hover{background:rgba(0,242,254,.07)}
+@keyframes rowin{from{background:rgba(0,242,254,.22)}}
+td:last-child{font-variant-numeric:tabular-nums;color:var(--green)}
+.dot{display:inline-block;width:10px;height:10px;margin-right:var(--s2);border-radius:3px;box-shadow:0 0 8px rgba(255,255,255,.35)}
+#empty-log{padding:var(--s6) var(--s4);text-align:center;color:var(--muted)}
+
+/* ---------- small screens ---------- */
+@media (max-width:640px){
+  header{padding:var(--s3) var(--s4)}
+  section{padding:var(--s4)}
+  section::before{left:var(--s4);right:var(--s4)}
+  .row button{flex:1 1 calc(50% - 8px)}
+  th,td{padding:var(--s2) var(--s3)}
+  #twin .bin-name{font-size:15px;letter-spacing:.03em}
+  #twin .bin-count{font-size:26px}
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  .belt-dash,#alert,.bin-shell.alert,tbody tr{animation:none}
+  .door,.bin-fill,button,.tile,#drop,section,#status{transition:none}
+  button:hover:not(:disabled),.tile:hover,#drop:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Smart MRF Digital Twin</h1>
+  <div id="status" role="status">Checking model</div>
+</header>
+<p id="alert" role="alert"></p>
+
+<main>
+  <!-- Intake -->
+  <section aria-labelledby="intake-h">
+    <h2 id="intake-h">Scan a frame</h2>
+
+    <label id="drop" for="imageInput">
+      <strong>Drop an image here or choose a file</strong>
+      <span>JPG, PNG, BMP or WebP, up to 16 MB</span>
+    </label>
+    <input type="file" id="imageInput" accept="image/*">
+
+    <div class="row">
+      <button id="camStart" type="button">Start camera</button>
+      <button id="camSnap" type="button" disabled>Capture frame</button>
+      <label class="inline"><input type="checkbox" id="auto" disabled> Scan every 2 seconds</label>
+      <button id="camStop" type="button" disabled>Stop camera</button>
+    </div>
+
+    <div class="slider">
+      <div><label for="conf">Minimum confidence</label><output id="confOut">40%</output></div>
+      <input type="range" id="conf" min="0.2" max="0.8" step="0.05" value="0.4">
+    </div>
+
+    <div id="view">
+      <video id="video" autoplay playsinline muted></video>
+      <img id="preview" alt="Annotated detection result" hidden>
+      <div class="empty" id="viewEmpty">The annotated result appears here.</div>
+      <div id="busy"><div><div class="spinner"></div>Running model</div></div>
+    </div>
+    <div id="meta"></div>
+  </section>
+
+  <!-- Twin, counters, log -->
+  <div class="right">
+    <section aria-labelledby="twin-h">
+      <div class="head-row">
+        <h2 id="twin-h">Sorting line</h2>
+        <button id="reset" type="button">Reset counts</button>
+      </div>
+      <svg id="twin" viewBox="0 0 920 330" role="img" aria-label="Conveyor belt with five sorting bins: plastic, paper, glass, metal and hazardous"></svg>
+
+      <div id="tiles"></div>
+
+      <h2>Recent detections</h2>
+      <div id="logwrap">
+        <div id="empty-log">No detections yet. Scan a frame to start the log.</div>
+        <table id="logtable" hidden>
+          <thead><tr><th>Time</th><th>Category</th><th>Class</th><th>Confidence</th></tr></thead>
+          <tbody id="log"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const BINS = [
+    {key:'plastic',   label:'Plastic',   color:'var(--plastic)'},
+    {key:'paper',     label:'Paper',     color:'var(--paper)'},
+    {key:'glass',     label:'Glass',     color:'var(--glass)'},
+    {key:'metal',     label:'Metal',     color:'var(--metal)'},
+    {key:'hazardous', label:'Hazardous', color:'var(--hazardous)'},
+  ];
+  const BIN_CAPACITY = 30;          // items before a bin shows as full
+  const SPEED = 240;                // belt speed, px per second
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const mk = (tag, attrs = {}, parent) => {
+    const el = document.createElementNS(NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  };
+
+  /* ---------- Build the twin ---------- */
+  const svg = $('twin');
+  const centers = BINS.map((_, i) => 100 + i * 180);
+  const BIN_TOP = 150, BIN_H = 140, FILL_MAX = 132;
+
+  mk('rect', {x:10, y:84, width:900, height:20, fill:'var(--belt)', rx:3}, svg);
+  mk('line', {x1:14, x2:906, y1:94, y2:94, class:'belt-dash'}, svg);
+  mk('circle', {cx:18, cy:94, r:14, fill:'#1d2623'}, svg);
+  mk('circle', {cx:902, cy:94, r:14, fill:'#1d2623'}, svg);
+
+  const doors = centers.map(cx =>
+    mk('rect', {x:cx - 24, y:84, width:48, height:20, class:'door'}, svg));
+
+  const itemLayer = mk('g', {}, svg);   // drawn before bins so items vanish behind them
+
+  const bins = BINS.map((b, i) => {
+    const cx = centers[i];
+    const g = mk('g', {}, svg);
+    const shell = mk('rect', {x:cx - 70, y:BIN_TOP, width:140, height:BIN_H, rx:4, class:'bin-shell'}, g);
+    const fill = mk('rect', {x:cx - 66, y:BIN_TOP + BIN_H - 4, width:132, height:0, fill:b.color, class:'bin-fill', opacity:.9}, g);
+    mk('text', {x:cx, y:BIN_TOP + BIN_H + 22, 'text-anchor':'middle', class:'bin-name'}, g).textContent = b.label;
+    const count = mk('text', {x:cx, y:BIN_TOP + BIN_H + 44, 'text-anchor':'middle', class:'bin-count'}, g);
+    count.textContent = '0';
+    return {key:b.key, shell, fill, count, n:0, alertTimer:null};
+  });
+  const binIndex = Object.fromEntries(BINS.map((b, i) => [b.key, i]));
+
+  /* ---------- Build the counter tiles ---------- */
+  const totals = {total:0};
+  BINS.forEach(b => totals[b.key] = 0);
+  const tiles = $('tiles');
+  const tileEls = {};
+  const addTile = (key, label, color, cls = '') => {
+    const d = document.createElement('div');
+    d.className = 'tile ' + cls;
+    if (color) d.style.borderLeftColor = color;
+    d.innerHTML = '<b>0</b><span>' + label + '</span>';
+    tiles.appendChild(d);
+    tileEls[key] = d.querySelector('b');
+  };
+  addTile('total', 'Items processed', '', 'total');
+  BINS.forEach(b => addTile(b.key, b.label, b.color));
+
+  /* ---------- Twin animation ---------- */
+  const items = [];
+  function spawnItem(binKey, delayMs) {
+    const i = binIndex[binKey] ?? 0;
+    const el = mk('rect', {width:22, height:22, rx:3, fill:BINS[i].color, stroke:'#1d2623', 'stroke-width':1.5, visibility:'hidden'}, itemLayer);
+    items.push({el, bin:i, x:30, y:62, vy:0, tx:centers[i], phase:'belt', start:performance.now() + delayMs, shown:false});
+  }
+  function arrive(it) {
+    const b = bins[it.bin];
+    b.n++;
+    const h = Math.min(b.n / BIN_CAPACITY, 1) * FILL_MAX;
+    b.fill.setAttribute('height', h);
+    b.fill.setAttribute('y', BIN_TOP + BIN_H - 4 - h);
+    b.count.textContent = b.n;
+  }
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    const open = new Set();
+    for (let k = items.length - 1; k >= 0; k--) {
+      const it = items[k];
+      if (now < it.start) continue;
+      if (!it.shown) { it.shown = true; it.el.setAttribute('visibility', 'visible'); }
+      if (it.phase === 'belt') {
+        it.x += SPEED * dt;
+        if (it.x >= it.tx - 36) open.add(it.bin);
+        if (it.x >= it.tx) { it.x = it.tx; it.phase = 'drop'; }
+      } else {
+        it.vy += 900 * dt;
+        it.y += it.vy * dt;
+        open.add(it.bin);
+        if (it.y >= BIN_TOP) { arrive(it); it.el.remove(); items.splice(k, 1); continue; }
+      }
+      it.el.setAttribute('transform', 'translate(' + (it.x - 11) + ' ' + it.y + ')');
+    }
+    doors.forEach((d, i) => d.classList.toggle('open', open.has(i)));
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ---------- Hazard alert ---------- */
+  let alertTimer = null;
+  function hazardAlert(dets) {
+    const hz = dets.filter(d => d.bin === 'hazardous');
+    if (!hz.length) return;
+    const top = hz.reduce((a, b) => (b.confidence > a.confidence ? b : a));
+    const name = top.class.replace('_', ' ');
+    $('alert').textContent = 'Hazardous item detected: ' + name + ' (' + Math.round(top.confidence * 100) + '%). Route to the sealed bin and check the line.';
+    $('alert').classList.add('show');
+    const b = bins[binIndex.hazardous];
+    b.shell.classList.add('alert');
+    clearTimeout(alertTimer);
+    alertTimer = setTimeout(() => {
+      $('alert').classList.remove('show');
+      b.shell.classList.remove('alert');
+    }, 8000);
+  }
+
+  /* ---------- Counters + log ---------- */
+  function addCounts(dets) {
+    dets.forEach(d => {
+      totals.total++;
+      totals[d.bin] = (totals[d.bin] || 0) + 1;
+    });
+    Object.keys(tileEls).forEach(k => tileEls[k].textContent = totals[k]);
+  }
+  function addLog(dets) {
+    if (!dets.length) return;
+    $('empty-log').hidden = true;
+    $('logtable').hidden = false;
+    const tbody = $('log');
+    const time = new Date().toLocaleTimeString();
+    dets.forEach(d => {
+      const tr = document.createElement('tr');
+      const color = BINS[binIndex[d.bin] ?? 0].color;
+      tr.innerHTML = '<td>' + time + '</td><td><span class="dot" style="background:' + color + '"></span>' +
+        BINS[binIndex[d.bin] ?? 0].label + '</td><td>' + d.class.replace('_', ' ') + '</td><td>' +
+        Math.round(d.confidence * 100) + '%</td>';
+      tbody.prepend(tr);
+    });
+    while (tbody.children.length > 40) tbody.lastChild.remove();
+  }
+  $('reset').addEventListener('click', () => {
+    Object.keys(totals).forEach(k => totals[k] = 0);
+    Object.keys(tileEls).forEach(k => tileEls[k].textContent = 0);
+    bins.forEach(b => {
+      b.n = 0; b.count.textContent = '0';
+      b.fill.setAttribute('height', 0);
+      b.fill.setAttribute('y', BIN_TOP + BIN_H - 4);
+    });
+    $('log').innerHTML = '';
+    $('logtable').hidden = true;
+    $('empty-log').hidden = false;
+  });
+
+  /* ---------- Model call ---------- */
+  let busy = false;
+  function setBusy(v) {
+    busy = v;
+    $('busy').classList.toggle('show', v);
+  }
+  async function sendBlob(blob, name) {
+    if (busy) return;
+    setBusy(true);
+    $('meta').textContent = '';
+    try {
+      const fd = new FormData();
+      fd.append('image', blob, name);
+      fd.append('conf', $('conf').value);
+      const res = await fetch('/predict', {method:'POST', body:fd});
+      const data = await res.json();
+      if (!res.ok || data.status !== 'success') throw new Error(data.message || 'Request failed');
+      showResult(data);
+    } catch (e) {
+      $('meta').textContent = 'Could not scan this frame: ' + e.message;
+    } finally {
+      setBusy(false);
+    }
+  }
+  function showResult(data) {
+    $('preview').src = data.image_base64 || data.image_url;
+    $('preview').hidden = false;
+    $('viewEmpty').hidden = true;
+    const n = data.total_count;
+    $('meta').textContent = n
+      ? n + (n === 1 ? ' item' : ' items') + ' found in ' + data.inference_ms + ' ms'
+      : 'No items found at this confidence. Try lowering the minimum confidence.';
+    const dets = data.detections;
+    addCounts(dets);
+    addLog(dets);
+    dets.forEach((d, i) => spawnItem(d.bin, i * 450));
+    if (data.hazardous) hazardAlert(dets);
+  }
+
+  /* ---------- File input + drag and drop ---------- */
+  const handleFile = f => { if (f) { stopCamera(); sendBlob(f, f.name); } };
+  $('imageInput').addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value = ''; });
+  const drop = $('drop');
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+
+  /* ---------- Camera ---------- */
+  let stream = null, autoTimer = null;
+  const video = $('video'), canvas = document.createElement('canvas');
+  function setCamUI(on) {
+    $('camStart').disabled = on;
+    $('camSnap').disabled = !on;
+    $('camStop').disabled = !on;
+    $('auto').disabled = !on;
+    video.style.display = on ? 'block' : 'none';
+    if (on) { $('preview').hidden = true; $('viewEmpty').hidden = true; }
+    else if ($('preview').src) { $('preview').hidden = false; }
+    else { $('viewEmpty').hidden = false; }
+  }
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280}}});
+      video.srcObject = stream;
+      setCamUI(true);
+    } catch (e) {
+      $('meta').textContent = 'Camera unavailable: ' + e.message;
+    }
+  }
+  function stopCamera() {
+    clearInterval(autoTimer); autoTimer = null;
+    $('auto').checked = false;
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    video.srcObject = null;
+    setCamUI(false);
+  }
+  function snap() {
+    if (!stream || !video.videoWidth) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(b => b && sendBlob(b, 'frame.jpg'), 'image/jpeg', 0.9);
+  }
+  $('camStart').addEventListener('click', startCamera);
+  $('camStop').addEventListener('click', stopCamera);
+  $('camSnap').addEventListener('click', snap);
+  $('auto').addEventListener('change', e => {
+    clearInterval(autoTimer);
+    if (e.target.checked) { snap(); autoTimer = setInterval(snap, 2000); }
+  });
+
+  $('conf').addEventListener('input', e => $('confOut').textContent = Math.round(e.target.value * 100) + '%');
+
+  /* ---------- Model status ---------- */
+  fetch('/health').then(r => r.json()).then(h => {
+    const s = $('status');
+    s.textContent = 'Model ready, ' + h.classes.length + ' classes';
+    s.classList.add('ok');
+  }).catch(() => {
+    const s = $('status');
+    s.textContent = 'Server not reachable';
+    s.classList.add('bad');
+  });
+})();
+</script>
+</body>
+</html>

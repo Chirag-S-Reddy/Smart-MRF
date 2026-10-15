@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets (never commit)
+.env
+!.env.example
+
+# Datasets and merged data
+raw/
+combined/
+Ds1/
+Ds2/
+Ds3/
+data/images/
+data/labels/
+data/*/images/
+data/*/labels/
+*.zip
+
+# Training output and models
+runs/
+smart-mrf-runs/
+*.pt
+*.onnx
+*.engine
+
+# Videos
+*.mp4
