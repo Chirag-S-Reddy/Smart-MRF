@@ -1,17 +1,3 @@
-"""Smart MRF - generative AI operator reports.
-
-Turns a snapshot of the digital twin (counts per bin, per class, hazard
-events, recent detections) into a short plain-language report with
-recommendations for plant operators.
-
-Setup: put your key in a .env file next to app.py:
-
-    GEMINI_API_KEY=your_key_here
-
-With no key the app still works: it returns a rule-based "offline" report
-built from the same snapshot, clearly labelled as such. The key is only ever
-read on the server and is never sent to the browser.
-"""
 from __future__ import annotations
 
 import os

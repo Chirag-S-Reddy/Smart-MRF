@@ -3,603 +3,2013 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#1c1f30">
-<title>Smart MRF Digital Twin</title>
+<title>Smart MRF Digital Twin - Operator Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Patrick+Hand&family=Caveat+Brush&display=swap" rel="stylesheet">
 <style>
-/* ==========================================================
-   Smart MRF Digital Twin — dark cyberpunk / terminal theme
-   Visual-only restyle. IDs, classes, data hooks and the script
-   are untouched; legacy colour variables are kept because the
-   script references var(--plastic) etc. at runtime.
-   ========================================================== */
-:root{
-  color-scheme:dark;
+  /* ==========================================================
+     Smart MRF Digital Twin — Glassmorphism & A11y 
+     ========================================================== */
+  :root {
+    --page-zoom: 0.6;   /* overall page zoom: 0.6 = 60% of the screen */
+    /* Required Material Colors (High Contrast WCAG AA compliant) */
+    --plastic: #0056b3;       /* Deep Blue */
+    --paper: #b85d19;         /* Terracotta Gold */
+    --glass: #0b7a44;         /* Emerald Green */
+    --metal: #6a2c91;         /* Amethyst Purple */
+    --hazardous: #d32f2f;     /* Safety Crimson */
 
-  /* spacing scale (4pt / 8pt) */
-  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px;
-  --r-sm:8px; --r-md:12px; --r-lg:16px;
+    /* Typography & Spacing */
+    --font-base: "Plus Jakarta Sans", system-ui, sans-serif;
+    --text-main: #1a1e23;
+    --text-muted: #4a5568;
+    --focus-ring: #FF8A00;    /* Bright Orange for A11y */
+    
+    /* Glassmorphism Variables */
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  }
 
-  /* surfaces + text */
-  --bg:#1c1f30; --bg-deep:#11131f;
-  --surface:rgba(255,255,255,.045); --surface-hi:rgba(255,255,255,.085);
-  --line:rgba(255,255,255,.12); --line-strong:rgba(255,255,255,.24);
-  --ink:#e9ecff; --muted:#a3abd0;
+  *, *::before, *::after { box-sizing: border-box; }
+  
+  [hidden] { display: none !important; }
 
-  /* neon accents */
-  --cyan:#00f2fe; --purple:#bd00ff; --pink:#ff007a; --green:#00ff88; --gold:#d4af37;
+  body {
+    margin: 0;
+    min-height: calc(100vh / var(--page-zoom));   /* fills the screen at the zoom level */
+    zoom: var(--page-zoom);
+    font-family: var(--font-base);
+    font-size: 18px; /* Senior-friendly base size */
+    line-height: 1.6;
+    color: var(--text-main);
+    
+    /* Uplifting Mesh Gradient */
+    background-color: #fdfbf7;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 255, 255, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(255, 0, 255, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(255, 191, 0, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
 
-  /* names the script / SVG rely on */
-  --concrete:var(--bg); --panel:#171a2b; --belt:#0b0d1a; --door:#3b4478;
-  --plastic:#00f2fe; --paper:#d4af37; --glass:#00ff88; --metal:#bd00ff; --hazardous:#ff007a;
+  /* Accessibility: High Visibility Focus */
+  :focus-visible {
+    outline: 3px solid var(--focus-ring) !important;
+    outline-offset: 4px !important;
+    border-radius: 4px;
+  }
 
-  --display:"Orbitron","Arial Narrow",Arial,sans-serif;
-  --body:"Share Tech Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-}
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-::selection{background:rgba(189,0,255,.55);color:#fff}
+  /* Structural Typography */
+  h1, h2, h3 { line-height: 1.2; margin: 0; }
+  h1 { font-size: 24px; font-weight: 800; color: #111827; }
+  h2 { font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 16px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px;}
 
-body{
-  margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
-  background-color:var(--bg);
-  background-image:
-    radial-gradient(900px 520px at 10% -10%,rgba(189,0,255,.17),transparent 60%),
-    radial-gradient(800px 520px at 100% 0%,rgba(0,242,254,.12),transparent 60%),
-    radial-gradient(700px 500px at 50% 115%,rgba(255,0,122,.09),transparent 60%);
-  background-attachment:fixed;
-  -webkit-font-smoothing:antialiased;
-}
-body::before{
-  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
-  background-size:40px 40px;
-  -webkit-mask-image:radial-gradient(ellipse at center,#000 30%,transparent 85%);
-  mask-image:radial-gradient(ellipse at center,#000 30%,transparent 85%);
-}
-button,input{font:inherit}
-:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
 
-/* ---------- header ---------- */
-header{
-  position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s4);
-  padding:var(--s4) clamp(16px,3vw,40px);
-  background:rgba(17,19,31,.72);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--line);
-  box-shadow:0 1px 0 rgba(0,242,254,.15),0 8px 32px rgba(0,0,0,.35);
-}
-header h1{
-  margin:0;font-family:var(--display);font-weight:800;font-size:clamp(16px,2.2vw,24px);letter-spacing:.14em;text-transform:uppercase;line-height:1.2;
-  background:linear-gradient(90deg,var(--cyan),var(--purple) 60%,var(--pink));
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-header h1::before{
-  content:"";display:inline-block;width:12px;height:12px;margin-right:var(--s3);vertical-align:middle;border-radius:3px;
-  background:var(--cyan);box-shadow:0 0 12px var(--cyan),0 0 24px rgba(0,242,254,.5);
-}
-#status{
-  display:inline-flex;align-items:center;gap:var(--s2);padding:6px var(--s4);border-radius:999px;
-  font-size:13px;letter-spacing:.06em;color:var(--muted);background:var(--surface);border:1px solid var(--line);
-  transition:color .2s,border-color .2s,background .2s;
-}
-#status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
-#status.ok{color:var(--green);border-color:rgba(0,255,136,.45);background:rgba(0,255,136,.08)}
-#status.bad{color:#ff5fa2;border-color:rgba(255,0,122,.5);background:rgba(255,0,122,.1)}
+  #status {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 16px;
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #059669;
+  }
 
-/* ---------- hazard banner ---------- */
-#alert{
-  display:none;margin:0;padding:var(--s3) clamp(16px,3vw,40px);
-  background-color:#9c0a45;border-bottom:1px solid var(--pink);box-shadow:0 0 28px rgba(255,0,122,.45);
-  color:#fff;font-family:var(--display);font-size:clamp(13px,1.4vw,16px);font-weight:600;letter-spacing:.06em;line-height:1.5;
-  animation:flash 1s steps(2,jump-none) infinite;
-}
-#alert.show{display:block}
-@keyframes flash{50%{background-color:#6d052f}}
+  #alert {
+    display: none;
+    margin: 16px 32px;
+    padding: 16px;
+    background: var(--hazardous);
+    color: white;
+    font-weight: 700;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+  }
+  #alert.show { display: block; }
 
-/* ---------- layout (full width) ---------- */
-main{
-  display:grid;grid-template-columns:minmax(340px,32%) minmax(0,1fr);gap:var(--s6);align-items:start;
-  width:100%;padding:var(--s6) clamp(16px,3vw,40px) var(--s10);
-}
-@media (max-width:1000px){main{grid-template-columns:minmax(0,1fr)}}
-.right{display:flex;flex-direction:column;gap:var(--s6);min-width:0}
+  /* Main 3-Zone Layout: Simulation Deck is the wide centre column */
+  main {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.5fr) minmax(300px, 0.8fr);
+    gap: 24px;
+    padding: 24px 32px;
+    width: 100%;
+    margin: 0 auto;
+    min-height: calc(100vh / var(--page-zoom) - 90px);
+  }
+  /* (media queries see the real window width, not the zoomed one) */
+  @media (max-width: 1000px) {
+    main { grid-template-columns: 1fr 1fr; }
+    .zone-2 { grid-column: 1 / -1; order: -1; }   /* deck on top, full width */
+  }
+  @media (max-width: 700px) {
+    main { grid-template-columns: 1fr; }
+  }
 
-section{
-  position:relative;padding:var(--s6);border:1px solid var(--line);border-radius:var(--r-lg);
-  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);
-  transition:border-color .25s,box-shadow .25s;
-}
-section:hover{border-color:rgba(0,242,254,.32);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 32px rgba(0,242,254,.08),inset 0 1px 0 rgba(255,255,255,.08)}
-section::before{
-  content:"";position:absolute;top:0;left:var(--s6);right:var(--s6);height:2px;border-radius:0 0 2px 2px;
-  background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink));opacity:.85;
-}
-h2{
-  margin:0 0 var(--s4);font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);
-}
-h2::before{content:"//";content:"//" / "";margin-right:var(--s2);color:var(--purple)}
+  /* Glassmorphism Cards */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--glass-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-/* ---------- intake ---------- */
-#drop{
-  display:block;padding:var(--s8) var(--s4);text-align:center;cursor:pointer;
-  border:1.5px dashed rgba(0,242,254,.45);border-radius:var(--r-md);background:rgba(0,242,254,.04);
-  transition:transform .2s ease,border-color .2s,background .2s,box-shadow .2s;
-}
-#drop:hover{transform:translateY(-2px);border-color:var(--cyan);background:rgba(0,242,254,.09);box-shadow:0 0 24px rgba(0,242,254,.18)}
-#drop.over{border-style:solid;border-color:var(--green);background:rgba(0,255,136,.1);box-shadow:0 0 32px rgba(0,255,136,.3)}
-#drop strong{display:block;margin-bottom:var(--s2);font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.1em;line-height:1.5;text-transform:uppercase;color:var(--ink)}
-#drop span{color:var(--muted);font-size:13px}
-#imageInput{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
-#drop:focus-within{outline:2px solid var(--cyan);outline-offset:3px}
+  /* ==========================================================
+     Hand-drawn 3D buttons (sketchy marker look)
+     - ::before = the face (ink outline, marker fill)
+     - ::after  = the hatched side wall that gives the 3D depth
+     - colours come from --c (face) and --c-dark (hatching)
+     ========================================================== */
+  :root { --ink: #1b1b1b; --hand: "Patrick Hand", "Comic Sans MS", "Segoe Print", cursive; }
 
-.row{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin-top:var(--s4)}
+  button, label.btn-style {
+    --c: #ffc93c;
+    --c-dark: #c28f0a;
+    --depth: 10px;
+    --wall-y: var(--depth);
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px; /* A11y Minimum Touch Target */
+    min-width: 52px;
+    padding: 12px 26px;
+    font-family: var(--hand);
+    font-size: 21px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    text-decoration: none;
+    transform: translateY(0);
+    transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
 
-button{
-  display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);min-height:40px;padding:var(--s2) var(--s4);
-  border:1px solid rgba(0,242,254,.5);border-radius:var(--r-sm);background:rgba(0,242,254,.07);color:var(--cyan);
-  font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
-  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease;
-}
-button:hover:not(:disabled){transform:translateY(-2px);background:rgba(0,242,254,.16);box-shadow:0 6px 20px rgba(0,242,254,.25)}
-button:active:not(:disabled){transform:translateY(0);box-shadow:none}
-button:disabled{opacity:.4;cursor:not-allowed}
+  /* the face */
+  button::before, label.btn-style::before {
+    content: "";
+    position: absolute; inset: 0;
+    z-index: -1;
+    border: 3px solid var(--ink);
+    border-radius: 14px 20px 12px 18px / 18px 12px 20px 14px;
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,0.38) 0 26%, transparent 26%),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0 1.5px, transparent 1.5px 6px),
+      var(--c);
+    filter: url(#sketchyA);
+  }
 
-#camStart{border-color:transparent;background:linear-gradient(135deg,var(--cyan),var(--green));color:#07101c;box-shadow:0 4px 18px rgba(0,242,254,.3)}
-#camStart:hover:not(:disabled){background:linear-gradient(135deg,var(--cyan),var(--green));box-shadow:0 8px 28px rgba(0,242,254,.5)}
-#camSnap{border-color:rgba(189,0,255,.65);background:rgba(189,0,255,.12);color:#e3a8ff}
-#camSnap:hover:not(:disabled){background:rgba(189,0,255,.26);box-shadow:0 6px 20px rgba(189,0,255,.35)}
-#camStop,#reset{border-color:rgba(255,0,122,.6);background:rgba(255,0,122,.1);color:#ff7ab8}
-#camStop:hover:not(:disabled),#reset:hover:not(:disabled){background:rgba(255,0,122,.22);box-shadow:0 6px 20px rgba(255,0,122,.35)}
+  /* the hatched side wall (sits behind the face, shifted down + right) */
+  button::after, label.btn-style::after {
+    content: "";
+    position: absolute; inset: 0;
+    z-index: -2;
+    border: 3px solid var(--ink);
+    border-radius: 14px 20px 12px 18px / 18px 12px 20px 14px;
+    background: repeating-linear-gradient(-45deg, var(--c-dark) 0 2.5px, var(--c) 2.5px 6px);
+    transform: translate(4px, var(--wall-y));
+    transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: url(#sketchyB);
+  }
 
-label.inline{display:flex;gap:var(--s2);align-items:center;padding:0 var(--s2);font-size:13px;color:var(--muted);cursor:pointer}
-label.inline input{width:16px;height:16px;margin:0;accent-color:var(--cyan)}
-label.inline:has(input:disabled){opacity:.5;cursor:not-allowed}
+  button:hover:not(:disabled), label.btn-style:hover {
+    transform: translateY(-3px) rotate(-0.6deg);
+    --wall-y: calc(var(--depth) + 3px);
+  }
 
-.slider{width:100%;margin-top:var(--s5)}
-.slider div{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted)}
-.slider output{font-family:var(--display);font-size:13px;font-weight:600;color:var(--cyan)}
-.slider input{width:100%;margin:var(--s2) 0 0;height:24px;background:transparent;cursor:pointer;accent-color:var(--cyan);-webkit-appearance:none;appearance:none}
-.slider input::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shadow:0 0 10px rgba(0,242,254,.3)}
-.slider input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-6px;border-radius:50%;background:#fff;border:2px solid var(--cyan);box-shadow:0 0 12px var(--cyan);transition:transform .15s ease}
-.slider input:hover::-webkit-slider-thumb{transform:scale(1.15)}
-.slider input::-moz-range-track{height:6px;border-radius:999px;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shadow:0 0 10px rgba(0,242,254,.3)}
-.slider input::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--cyan);box-shadow:0 0 12px var(--cyan)}
+  button:active:not(:disabled) {
+    transform: translateY(calc(var(--depth) - 2px)) rotate(0deg);
+    --wall-y: 2px;
+  }
 
-#view{
-  position:relative;margin-top:var(--s5);min-height:220px;display:grid;place-items:center;overflow:hidden;
-  background:var(--bg-deep);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:inset 0 0 40px rgba(0,0,0,.5);
-}
-#view::before{
-  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px);
-}
-#view img,#view video{display:block;max-width:100%;max-height:340px;object-fit:contain}
-#view #video{display:none}   /* script toggles this inline when the camera starts/stops */
-#view .empty{padding:var(--s6);text-align:center;color:var(--muted)}
-#busy{
-  position:absolute;inset:0;z-index:3;display:none;place-items:center;text-align:center;
-  background:rgba(17,19,31,.84);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
-  color:var(--cyan);font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
-}
-#busy.show{display:grid}
-.spinner{
-  width:36px;height:36px;margin:0 auto var(--s3);border-radius:50%;
-  border:3px solid rgba(0,242,254,.2);border-top-color:var(--cyan);border-right-color:var(--purple);
-  box-shadow:0 0 16px rgba(0,242,254,.4);animation:spin .8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-#meta{margin-top:var(--s3);min-height:21px;color:var(--muted);font-size:13px}
+  button:focus-visible {
+    outline: 3px dashed var(--focus-ring) !important;
+    outline-offset: 6px !important;
+    border-radius: 16px;
+  }
 
-/* ---------- digital twin (SVG) ---------- */
-#twin{
-  display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:var(--r-md);background-color:#0e1020;
-  background-image:linear-gradient(rgba(0,242,254,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,242,254,.05) 1px,transparent 1px);
-  background-size:24px 24px;
-}
-#twin text{font-family:var(--display);fill:var(--ink)}
-#twin > rect:not(.door){fill:#0b0d1a;stroke:rgba(0,242,254,.4);stroke-width:1.5}
-#twin > circle{fill:#0b0d1a;stroke:var(--cyan);stroke-width:2;filter:drop-shadow(0 0 4px rgba(0,242,254,.6))}
-.belt-dash{stroke:var(--cyan);stroke-opacity:.7;stroke-width:2;stroke-dasharray:10 14;animation:belt 1s linear infinite}
-@keyframes belt{to{stroke-dashoffset:-24}}
-.door{fill:var(--door);stroke:var(--cyan);stroke-width:1.5;transform-box:fill-box;transform-origin:0 0;transition:transform .18s ease-out}
-.door.open{transform:rotate(78deg)}
+  button:disabled {
+    --c: #e6e2d8 !important;
+    --c-dark: #cfc9bb !important;
+    --depth: 4px;
+    color: rgba(27, 27, 27, 0.45);
+    cursor: not-allowed;
+    transform: none !important;
+  }
+  button:disabled::before { border-style: dashed; border-color: rgba(27, 27, 27, 0.5); }
+  button:disabled::after  { border-style: dashed; border-color: rgba(27, 27, 27, 0.35); }
 
-/* falling items (first <g>) */
-#twin > g:first-of-type > rect{stroke:rgba(255,255,255,.9);stroke-width:1.5;filter:drop-shadow(0 0 5px rgba(255,255,255,.55))}
+  button svg, label.btn-style svg {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 
-/* each bin group carries its own accent colour */
-#twin > g:nth-of-type(2){--c:var(--plastic)}
-#twin > g:nth-of-type(3){--c:var(--paper)}
-#twin > g:nth-of-type(4){--c:var(--glass)}
-#twin > g:nth-of-type(5){--c:var(--metal)}
-#twin > g:nth-of-type(6){--c:var(--hazardous)}
-.bin-shell{fill:rgba(255,255,255,.04);stroke:var(--c,var(--line-strong));stroke-width:2;filter:drop-shadow(0 0 5px var(--c,transparent))}
-.bin-shell.alert{animation:binflash .6s steps(2,jump-none) infinite}
-@keyframes binflash{50%{stroke:#ffd1e6;stroke-width:5;filter:drop-shadow(0 0 16px var(--hazardous))}}
-.bin-fill{transition:height .35s ease-out,y .35s ease-out;filter:drop-shadow(0 0 6px var(--c,transparent))}
-#twin .bin-name{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;fill:var(--muted)}
-#twin .bin-count{font-size:20px;font-weight:700;fill:var(--c,var(--ink))}
+  @keyframes sketch-spin { to { transform: rotate(360deg); } }
+  .spin { animation: sketch-spin 0.9s linear infinite; }
 
-/* ---------- counters + log ---------- */
-.head-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--s3);margin-bottom:var(--s4)}
-.head-row h2{margin:0}
-#tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:var(--s3);margin:var(--s5) 0 var(--s6)}
-.tile{
-  padding:var(--s3) var(--s4);border:1px solid var(--line);border-left-width:4px;border-radius:var(--r-md);background:var(--surface);
-  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
-}
-.tile:hover{transform:translateY(-3px);background:var(--surface-hi);box-shadow:0 10px 24px rgba(0,0,0,.4)}
-.tile b{display:block;font-family:var(--display);font-size:clamp(24px,2.4vw,32px);font-weight:700;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
-.tile span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.tile.total{background:linear-gradient(135deg,rgba(0,242,254,.18),rgba(189,0,255,.18));border-color:rgba(0,242,254,.4);border-left-color:var(--cyan)}
-.tile.total span{color:#c9d0f0}
+  @media (prefers-reduced-motion: reduce) {
+    button, button::after, label.btn-style, label.btn-style::after { transition: none; }
+    .spin { animation: none; }
+  }
 
-#logwrap{
-  max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(11,13,26,.55);
-  scrollbar-width:thin;scrollbar-color:rgba(0,242,254,.4) transparent;
-}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:var(--s2) var(--s4);border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap}
-th{
-  position:sticky;top:0;z-index:1;background:#14172a;border-bottom:1px solid rgba(0,242,254,.35);
-  font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);
-}
-tbody tr{transition:background .15s;animation:rowin .5s ease-out}
-tbody tr:hover{background:rgba(0,242,254,.07)}
-@keyframes rowin{from{background:rgba(0,242,254,.22)}}
-td:last-child{font-variant-numeric:tabular-nums;color:var(--green)}
-.dot{display:inline-block;width:10px;height:10px;margin-right:var(--s2);border-radius:3px;box-shadow:0 0 8px rgba(255,255,255,.35)}
-#empty-log{padding:var(--s6) var(--s4);text-align:center;color:var(--muted)}
+  /* Marker colours per button */
+  #camStart, #vidSave { --c: #7ed36f; --c-dark: #3f8f3a; }
+  #camSnap            { --c: #6fb6ff; --c-dark: #2f6fb8; }
+  #camStop, #vidStop, #exitBtn { --c: #ff7b5c; --c-dark: #c24a2e; }
+  #reset              { --c: #e3dfd3; --c-dark: #a49f90; }
+  #genReport          { --c: #b8a2ff; --c-dark: #6e56c9; }
+  #savePdf            { --c: #ffc93c; --c-dark: #c28f0a; }
 
-/* ---------- small screens ---------- */
-@media (max-width:640px){
-  header{padding:var(--s3) var(--s4)}
-  section{padding:var(--s4)}
-  section::before{left:var(--s4);right:var(--s4)}
-  .row button{flex:1 1 calc(50% - 8px)}
-  th,td{padding:var(--s2) var(--s3)}
-  #twin .bin-name{font-size:15px;letter-spacing:.03em}
-  #twin .bin-count{font-size:26px}
-}
+  /* Zone 1: Intake & Viewfinder */
+  #view {
+    width: 100%;
+    min-height: 280px;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 4px 16px rgba(0,0,0,0.5);
+  }
+  #video, #preview, #vidCanvas { max-width: 100%; max-height: 280px; object-fit: contain; }
+  #vidCanvas { display: block; }
+  #viewEmpty { color: #9ca3af; font-weight: 500; text-align: center; padding: 20px; }
+  
+  #busy {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.7);
+    color: white; font-weight: 700;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  #busy.show { display: flex; }
 
-/* ---------- reduced motion ---------- */
-@media (prefers-reduced-motion:reduce){
-  .belt-dash,#alert,.bin-shell.alert,tbody tr{animation:none}
-  .door,.bin-fill,button,.tile,#drop,section,#status{transition:none}
-  button:hover:not(:disabled),.tile:hover,#drop:hover{transform:none}
-}
+  #meta {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 12px; border-radius: 12px;
+    font-weight: 600; text-align: center;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  /* Controls */
+  .control-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 0 6px 10px 0;
+  }
+  
+  .checkbox-label {
+    display: flex; align-items: center; gap: 12px;
+    min-height: 52px; padding: 12px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 12px; cursor: pointer; font-weight: 600;
+  }
+  .checkbox-label input { width: 24px; height: 24px; accent-color: var(--focus-ring); }
+
+  #drop {
+    border: 3px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255,255,255,0.4);
+    transition: all 0.3s ease;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    min-height: 52px; /* Ensure dropzone meets touch target minimums */
+  }
+  #drop:hover { background: rgba(255,255,255,0.8); border-color: #3b82f6; }
+  #drop svg { color: #3b82f6; width: 40px; height: 40px; }
+  #imageInput { display: none; }
+
+  .slider-group {
+    display: flex; flex-direction: column; gap: 8px;
+    background: rgba(255,255,255,0.5); padding: 16px; border-radius: 16px;
+  }
+  .slider-header { display: flex; justify-content: space-between; font-weight: 700; }
+  input[type="range"] {
+    width: 100%; min-height: 52px; cursor: pointer;
+    accent-color: #3b82f6;
+  }
+
+  /* Zone 2: Digital Twin Simulator */
+  .zone-2 { display: flex; flex-direction: column; }
+  
+  #twin-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    overflow: hidden;
+    position: relative;
+  }
+
+  #twin { width: 100%; height: auto; display: block; }
+  
+  /* Counter Tiles */
+  #tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .tile {
+    background: rgba(255,255,255,0.9);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-bottom: 6px solid #ccc;
+  }
+  .tile.total { border-bottom-color: #111827; }
+  .tile.plastic { border-bottom-color: var(--plastic); }
+  .tile.paper { border-bottom-color: var(--paper); }
+  .tile.glass { border-bottom-color: var(--glass); }
+  .tile.metal { border-bottom-color: var(--metal); }
+  .tile.hazardous { border-bottom-color: var(--hazardous); }
+  
+  .tile b { display: block; font-size: 32px; font-weight: 800; line-height: 1.1; }
+  .tile span { display: block; font-size: 16px; font-weight: 700; color: var(--text-muted); margin-top: 4px; }
+
+  /* Zone 3: Audit Log & AI */
+  #logwrap {
+    background: rgba(255,255,255,0.8);
+    border-radius: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  #empty-log { padding: 24px; text-align: center; color: var(--text-muted); font-weight: 500; }
+  
+  table { width: 100%; border-collapse: collapse; text-align: left; }
+  th { background: #f3f4f6; position: sticky; top: 0; padding: 12px 16px; font-size: 16px; font-weight: 700; color: #374151; }
+  td { padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 500; }
+  
+  .badge {
+    display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 14px; font-weight: 700; color: white;
+  }
+
+  #reportBox {
+    background: rgba(255,255,255,0.9);
+    border-radius: 16px;
+    padding: 20px;
+    min-height: 150px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  #reportBox p { margin-top: 0; margin-bottom: 12px; }
+  #reportBox ul { margin: 0; padding-left: 24px; }
+  #reportMeta { font-size: 14px; color: var(--text-muted); font-style: italic; margin-top: -10px;}
+
+
+  /* ==========================================================
+     3D conveyor (three.js canvas)
+     ========================================================== */
+  .cv-viewport { position: relative; width: 100%; aspect-ratio: 1000 / 460; }
+  .cv-viewport canvas { display: block; width: 100%; height: 100%; }
+  .cv-intake { position: absolute; left: 20px; top: 10px; font-size: 14px; font-weight: 800;
+    letter-spacing: .08em; color: #4b5563; pointer-events: none; }
+  .cv-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; color: var(--text-muted); text-align: center; padding: 20px; }
+
+  /* Video analysis panel */
+  #vidPanel { display: flex; flex-direction: column; gap: 12px; background: rgba(255,255,255,0.5);
+    padding: 16px; border-radius: 16px; }
+  #vidPanel .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 700; }
+  #vidRate { font: inherit; font-weight: 700; min-height: 44px; border-radius: 10px; padding: 6px 10px;
+    border: 1px solid #cbd5e1; background: #fff; }
+  #vidBar { width: 100%; height: 14px; accent-color: #3b82f6; }
+  #vidStatus { font-size: 15px; font-weight: 600; color: var(--text-muted); }
+  #vidItems { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px;
+    max-height: 170px; overflow-y: auto; }
+  #vidItems li { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
+  #exitBtn { min-height: 44px; padding: 8px 20px; font-size: 19px; }
+
+  /* ==========================================================
+     Hand-drawn light theme for the whole page
+     (cream "sketchbook" paper, black felt-tip lines, marker colours)
+     ========================================================== */
+  :root {
+    --page-bg: #fdfbf3;
+    --line: #1b1b1b;                 /* black pen line */
+    --panel: rgba(255, 255, 255, 0.75);
+    --text-main: #1b1b1b;
+    --text-muted: #4a4a5a;
+    --plastic: #0056b3; --paper: #b85d19; --glass: #0b7a44; --metal: #6a2c91; --hazardous: #d32f2f;
+    --font-base: "Patrick Hand", "Comic Sans MS", "Segoe Print", cursive;
+    --font-head: "Caveat Brush", "Patrick Hand", "Comic Sans MS", cursive;
+    --wobbly: 18px 26px 14px 24px / 24px 14px 26px 18px;
+    --shade: rgba(27, 27, 27, 0.22);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: var(--line);
+    --glass-shadow: none;
+  }
+
+  body {
+    font-size: 20px;
+    color: var(--text-main);
+    background-color: var(--page-bg);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(27,27,27,0.12) 1.2px, transparent 1.6px),
+      radial-gradient(at 0% 0%, rgba(111,182,255,0.18) 0, transparent 45%),
+      radial-gradient(at 100% 100%, rgba(255,201,60,0.20) 0, transparent 45%);
+    background-size: 26px 26px, auto, auto;
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3 { font-family: var(--font-head); font-weight: 400; letter-spacing: 0.03em; color: var(--text-main); }
+  h1 { font-size: 34px; }
+  h2 { font-size: 28px; color: var(--text-main); border-bottom: 3px dashed var(--line); }
+  strong, b { font-weight: 400; text-shadow: 0.6px 0 0 currentColor; }   /* the hand font has no bold */
+
+  header {
+    background: rgba(253, 251, 243, 0.94);
+    backdrop-filter: none;
+    border-bottom: 6px double var(--line);
+    box-shadow: none;
+  }
+
+  #status {
+    background: #7ed36f; color: var(--ink); border: 3px solid var(--ink);
+    border-radius: 18px 24px 16px 22px / 22px 16px 24px 18px;
+    box-shadow: 3px 3px 0 var(--line); font-size: 18px; font-weight: 400;
+  }
+
+  #alert {
+    background: #ff7b5c; color: var(--ink); font-weight: 400; font-size: 22px;
+    border: 3px solid var(--ink); border-radius: var(--wobbly); box-shadow: 5px 5px 0 var(--line);
+  }
+
+  /* Big cards: wobbly pen outline + hatched offset shadow */
+  .glass-card, .tile {
+    position: relative; isolation: isolate;
+    background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none;
+    border: none; box-shadow: none;
+  }
+  .glass-card::before, .tile::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background: #fffdf6;
+    border: 3px solid var(--line); border-radius: var(--wobbly);
+    filter: url(#sketchyA);
+  }
+  .glass-card::after, .tile::after {
+    content: ""; position: absolute; inset: 0; z-index: -2; transform: translate(7px, 8px);
+    border: 3px solid var(--line); border-radius: var(--wobbly);
+    background: repeating-linear-gradient(-45deg, rgba(27,27,27,0.35) 0 2px, transparent 2px 7px);
+    filter: url(#sketchyB);
+  }
+  .tile { border-radius: var(--wobbly); border-bottom: none; }
+  .tile::after { transform: translate(4px, 5px); }
+  .tile b { font-family: var(--font-head); font-weight: 400; font-size: 42px; text-shadow: none; color: var(--text-main); }
+  .tile span { font-size: 18px; font-weight: 400; color: var(--text-muted); }
+
+  /* Smaller panels: pen outline */
+  #view, #meta, #logwrap, #reportBox, #twin-container, #drop, .checkbox-label, .slider-group, #vidPanel, #vidRate {
+    background-color: var(--panel); color: var(--text-main);
+    border: 3px solid var(--line); border-radius: var(--wobbly);
+    box-shadow: 4px 5px 0 var(--shade);
+  }
+  #view { background: #111; }
+  #twin-container { background: #ffffff; }
+  #meta { font-weight: 400; border-style: dashed; box-shadow: none; }
+  .checkbox-label, .slider-group, #vidPanel { border-style: dashed; box-shadow: none; }
+  #drop { border: 3px dashed var(--line); box-shadow: none; }
+  #drop:hover { background: rgba(111,182,255,0.25); border-color: #2f6fb8; }
+  #drop svg { color: #2f6fb8; }
+  #viewEmpty { color: #cfcfd8; font-weight: 400; }
+  #empty-log { color: var(--text-muted); font-weight: 400; }
+  #busy { font-weight: 400; font-size: 24px; }
+  .slider-header, #vidPanel .row { font-weight: 400; }
+  #vidStatus, #reportMeta { color: var(--text-muted); font-weight: 400; }
+  #vidItems li { color: var(--text-main); font-size: 18px; font-weight: 400; }
+  #vidRate { font-family: var(--font-base); font-weight: 400; font-size: 18px; border-radius: 14px 18px 12px 16px; background-color: #fff; }
+  input[type="range"], #vidBar { accent-color: #2f6fb8; }
+  .checkbox-label input { accent-color: #2f6fb8; }
+  .cv-intake { color: var(--text-muted); font-family: var(--font-head); font-weight: 400; font-size: 20px; }
+  .cv-fallback { color: var(--text-muted); font-weight: 400; }
+
+  /* Log table */
+  th { background: #f1ecdc; color: var(--text-main); font-family: var(--font-head); font-weight: 400; font-size: 20px;
+       border-bottom: 3px solid var(--line); letter-spacing: 0.04em; }
+  td { border-bottom: 2px dashed rgba(27,27,27,0.3); font-weight: 400; color: var(--text-main); }
+  .badge { color: #fff; font-weight: 400; font-size: 16px; letter-spacing: 0.05em; border: 2px solid var(--line);
+           border-radius: 10px 14px 9px 13px; padding: 2px 10px; }
+  small { color: var(--text-muted); }
+
+  #reportBox { box-shadow: none; }
+  #reportBox h3 { font-size: 26px; }
+  #reportBox p, #reportBox li { color: var(--text-main); }
+
+  ::selection { background: #ffc93c; color: var(--ink); }
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; border: 3px solid var(--page-bg); }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* Counter tiles: tidy 3x2 grid, clean marker strip along the bottom */
+  #tiles { grid-template-columns: repeat(3, 1fr); gap: 30px 28px; margin: 24px 10px 12px 0; }
+  .tile { --tc: var(--line); padding: 22px 12px 26px; }
+  .tile.plastic { --tc: var(--plastic); } .tile.paper { --tc: var(--paper); } .tile.glass { --tc: var(--glass); }
+  .tile.metal { --tc: var(--metal); } .tile.hazardous { --tc: var(--hazardous); }
+  .tile::before { box-shadow: inset 0 -10px 0 var(--tc); }
+  .tile b { font-size: 46px; margin-bottom: 6px; }
+  .tile span { font-size: 20px; }
+  @media (max-width: 700px) { #tiles { grid-template-columns: repeat(2, 1fr); } }
+
+  /* Tiles v3: plain offset shadow + short marker underline */
+  .tile::before { box-shadow: none; background: #fffdf6 linear-gradient(var(--tc), var(--tc)) no-repeat center bottom 14px / 56% 7px; }
+  .tile::after { background: var(--shade); transform: translate(5px, 6px); }
+  .tile { padding: 22px 12px 34px; }
+  .glass-card > button { margin-bottom: 12px; }
+
+  /* Tiles v4: coloured 3D "boxes" like the cubes and bins in the simulation */
+  .tile.total { --tc: #1f2937; }
+  .tile.plastic { --tc: #0056b3; } .tile.paper { --tc: #b85d19; } .tile.glass { --tc: #0b7a44; }
+  .tile.metal { --tc: #6a2c91; } .tile.hazardous { --tc: #d32f2f; }
+  .tile { padding: 22px 12px 24px; }
+  .tile::before {
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,0.22) 0 24%, transparent 24%),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,0.10) 0 1.5px, transparent 1.5px 6px),
+      var(--tc);
+    border: 3px solid var(--ink);
+  }
+  .tile::after {
+    border: 3px solid var(--ink);
+    background: repeating-linear-gradient(-45deg, rgba(0,0,0,0.5) 0 2.5px, var(--tc) 2.5px 6px);
+    transform: translate(5px, 9px);
+  }
+  .tile b, .tile span { color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+  #tiles { gap: 34px 30px; margin-bottom: 20px; }
+
+  /* ==========================================================
+     v5: whole page in the coloured 3D "box" style
+     ========================================================== */
+  .zone-1 { --zc: #0056b3; } .zone-2 { --zc: #0b7a44; } .zone-3 { --zc: #6a2c91; }
+
+  /* top bar: yellow marker strip with a hatched underside */
+  header {
+    background: #ffc93c; border-bottom: 4px solid var(--ink);
+    box-shadow: 0 8px 0 -2px #c28f0a, 0 11px 0 -2px var(--ink);
+  }
+  header h1 { color: var(--ink); }
+  main { padding-top: 34px; }
+
+  /* section cards: ink outline + coloured hatched 3D side */
+  .glass-card::before { border: 3px solid var(--ink); }
+  .glass-card::after {
+    border: 3px solid var(--ink);
+    background: repeating-linear-gradient(-45deg, rgba(0,0,0,0.5) 0 2.5px, var(--zc) 2.5px 6px);
+    transform: translate(9px, 11px);
+  }
+
+  /* section titles become coloured label boxes */
+  .glass-card h2 {
+    width: fit-content; max-width: 100%; margin-bottom: 8px;
+    padding: 4px 18px 6px; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,0.22) 0 28%, transparent 28%),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,0.10) 0 1.5px, transparent 1.5px 6px),
+      var(--zc);
+    border: 3px solid var(--ink); border-radius: 14px 20px 12px 18px / 18px 12px 20px 14px;
+    box-shadow: 4px 5px 0 var(--ink);
+  }
+
+  /* inner panels: ink outline + coloured solid side */
+  #view, #meta, #logwrap, #reportBox, #twin-container, #drop, .checkbox-label, .slider-group, #vidPanel, #vidRate {
+    border-color: var(--ink);
+  }
+  #view, #logwrap, #reportBox, #twin-container { box-shadow: 5px 6px 0 var(--zc); }
+  #meta, .checkbox-label, .slider-group, #vidPanel, #drop { box-shadow: 4px 5px 0 var(--zc); border-style: solid; }
+  #drop { border-style: dashed; }
+  th { background: var(--zc); color: #fff; border-bottom: 3px solid var(--ink); text-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+  #empty-log { background: transparent; }
+
+  /* Buttons v2: on hover/press the face sinks back over its hatched side and darkens */
+  button::after, label.btn-style::after { transform: translate(var(--wall-x, 4px), var(--wall-y)); }
+
+  button:hover:not(:disabled), button:active:not(:disabled) {
+    transform: translate(4px, var(--depth)) rotate(0deg);
+    --wall-x: 0px;
+    --wall-y: 0px;
+  }
+
+  /* Tile hover tooltips: what gets counted in each category */
+  .tile { cursor: help; }
+  .tile .tip {
+    position: absolute; left: 50%; bottom: calc(100% + 16px); z-index: 30;
+    width: max-content; max-width: 260px; padding: 10px 16px 12px; text-align: left;
+    background: #fffdf6; color: var(--ink); text-shadow: none;
+    border: 3px solid var(--ink); border-radius: 14px 20px 12px 18px / 18px 12px 20px 14px;
+    box-shadow: 5px 6px 0 var(--tc);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transform: translate(-50%, 8px) rotate(-1.5deg);
+    transition: opacity .15s, transform .18s cubic-bezier(0.34, 1.56, 0.64, 1), visibility .15s;
+  }
+  .tile .tip::after {              /* little pointer */
+    content: ""; position: absolute; left: 50%; top: 100%; width: 14px; height: 14px;
+    background: #fffdf6; border: 3px solid var(--ink); border-top: none; border-left: none;
+    transform: translate(-50%, -8px) rotate(45deg);
+  }
+  .tile .tip b { display: block; font-family: var(--font-head); font-weight: 400; font-size: 22px; text-shadow: none;
+    color: var(--tc); margin: 0 0 2px; }
+  .tile .tip span { display: block; font-size: 18px; line-height: 1.35; color: var(--ink); text-shadow: none; margin: 0; }
+  .tile:hover .tip, .tile:focus-visible .tip { opacity: 1; visibility: visible; transform: translate(-50%, 0) rotate(-1deg); }
+
+  /* Buttons v3: smooth, stable hover (invisible extra hit area + eased animation) */
+  @property --shade { syntax: "<number>"; inherits: true; initial-value: 0; }
+  button {
+    --hx: 10px;            /* extra invisible hit area left/right */
+    --hy: 14px;            /* extra invisible hit area above */
+    padding: calc(12px + var(--hy)) calc(26px + var(--hx)) 12px;
+    min-height: calc(52px + var(--hy));
+    margin: calc(-1 * var(--hy)) calc(-1 * var(--hx)) 0;
+    transition: transform 0.2s cubic-bezier(0.22, 0.8, 0.3, 1), --shade 0.2s ease;
+  }
+  #exitBtn, #reset { padding: calc(8px + var(--hy)) calc(20px + var(--hx)) 8px; min-height: calc(44px + var(--hy)); }
+  button::before, button::after { inset: var(--hy) var(--hx) 0 var(--hx); }
+  button::before {
+    background:
+      linear-gradient(rgba(0,0,0,calc(var(--shade) * 0.26)), rgba(0,0,0,calc(var(--shade) * 0.26))),
+      linear-gradient(to bottom, rgba(255,255,255,0.38) 0 26%, transparent 26%),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0 1.5px, transparent 1.5px 6px),
+      var(--c);
+  }
+  button::after { transition: transform 0.2s cubic-bezier(0.22, 0.8, 0.3, 1); }
+  button:hover:not(:disabled), button:active:not(:disabled) { --shade: 1; }
+  button:disabled { --shade: 0; }
+  @media (prefers-reduced-motion: reduce) { button, button::after { transition: none; } }
+
+  /* Live detection overlay */
+  #liveCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+  #liveBadge {
+    position: absolute; top: 10px; left: 10px; z-index: 3; display: flex; align-items: center; gap: 8px;
+    padding: 2px 14px 4px 10px; background: #ff6b5c; color: #111; border: 3px solid #111;
+    border-radius: 12px 16px 10px 14px; box-shadow: 3px 4px 0 #111;
+    font-family: var(--font-head); font-size: 20px; letter-spacing: 0.08em; line-height: 1.2;
+  }
+  #liveBadge i { width: 12px; height: 12px; border-radius: 50%; background: #111; animation: livepulse 1s ease-in-out infinite; }
+  @keyframes livepulse { 50% { opacity: 0.2; } }
+  @media (prefers-reduced-motion: reduce) { #liveBadge i { animation: none; } }
+  /* hazard alert now sits inside the Digital Twin card, under the counters */
+  #alert { margin: 8px 10px 12px 0; }
+
+  /* Log table fills the whole Real-time Audit block; AI Summary button sits right above it */
+  .zone-3 #logwrap { flex: 1 1 auto; max-height: none; min-height: 320px; }
+  .zone-3 #logtable { min-height: 0; }
+  #empty-log { padding: 48px 24px; }
+
+  /* AI summary pop-up */
+  .modal { position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(27, 27, 27, 0.55); }
+  .modal-card {
+    position: relative; width: min(760px, 94%); max-height: 88%; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 16px; padding: 22px 26px 30px;
+    background: #fffdf6; color: var(--text-main);
+    border: 3px solid var(--ink); border-radius: var(--wobbly); box-shadow: 9px 11px 0 #6a2c91;
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .modal-head h3 { font-size: 32px; margin: 0; }
+  .modal-card #reportBox { min-height: 200px; box-shadow: 4px 5px 0 #6a2c91; }
+  .modal-card #reportMeta { margin-top: 0; }
+  .modal-card #savePdf { align-self: flex-start; margin-bottom: 10px; }
 </style>
 </head>
 <body>
 
+<!-- Hand-drawn wobble filters used by the sketchy 3D buttons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="sketchyA" x="-6%" y="-12%" width="112%" height="124%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="1" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="sketchyB" x="-6%" y="-12%" width="112%" height="124%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="1" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
 <header>
-  <h1>Smart MRF Digital Twin</h1>
-  <div id="status" role="status">Checking model</div>
+  <div style="display:flex; align-items:center; gap: 16px;">
+    <!-- Large prominent icon for header -->
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2f6fb8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+      <path d="M3 3v5h5"/>
+    </svg>
+    <h1>Smart MRF Digital Twin</h1>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div id="status" role="status" aria-live="polite">System Active</div>
+    <button id="exitBtn" type="button" title="Stop the camera and shut down the server">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      Exit
+    </button>
+  </div>
 </header>
-<p id="alert" role="alert"></p>
 
 <main>
-  <!-- Intake -->
-  <section aria-labelledby="intake-h">
-    <h2 id="intake-h">Scan a frame</h2>
+  <!-- Zone 1: Capture Station -->
+  <section class="glass-card zone-1">
+    <h2>1. Intake Control</h2>
+    
+    <div id="view" aria-label="Camera Viewfinder">
+      <video id="video" autoplay playsinline muted hidden></video>
+      <img id="preview" alt="Captured frame preview" hidden>
+      <canvas id="vidCanvas" hidden></canvas>
+      <canvas id="liveCanvas" aria-hidden="true"></canvas>
+      <div id="liveBadge" hidden><i></i>LIVE</div>
+      <div id="viewEmpty">Camera stream or uploaded photo will appear here.</div>
+      <div id="busy" aria-live="assertive">Processing AI Vision...</div>
+    </div>
+    
+    <div id="meta" aria-live="polite">Ready for intake</div>
+
+    <div class="control-group">
+      <button id="camStart" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+        Start Camera
+      </button>
+      <button id="camSnap" type="button" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="4"></circle><path d="M22 8v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h3l1-2h6l1 2h3a2 2 0 012 2z"></path></svg>
+        Capture Frame
+      </button>
+      <button id="camStop" type="button" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+        Stop Camera
+      </button>
+    </div>
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="auto" disabled>
+      Auto-Scan (2s intervals)
+    </label>
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="live" checked disabled>
+      Live detection (boxes on the camera feed)
+    </label>
 
     <label id="drop" for="imageInput">
-      <strong>Drop an image here or choose a file</strong>
-      <span>JPG, PNG, BMP or WebP, up to 16 MB</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      <span>Drag & Drop an image or video, or <strong>Click to Upload</strong></span>
     </label>
-    <input type="file" id="imageInput" accept="image/*">
+    <input type="file" id="imageInput" accept="image/*,video/*">
 
-    <div class="row">
-      <button id="camStart" type="button">Start camera</button>
-      <button id="camSnap" type="button" disabled>Capture frame</button>
-      <label class="inline"><input type="checkbox" id="auto" disabled> Scan every 2 seconds</label>
-      <button id="camStop" type="button" disabled>Stop camera</button>
+    <div id="vidPanel" hidden>
+      <div class="row">
+        <label for="vidRate">Playback speed</label>
+        <select id="vidRate">
+          <option value="0.25">0.25x</option>
+          <option value="0.5">0.5x</option>
+          <option value="0.75">0.75x</option>
+          <option value="1" selected>1x (normal)</option>
+        </select>
+      </div>
+      <progress id="vidBar" max="1" value="0"></progress>
+      <div id="vidStatus" aria-live="polite">Waiting for a video...</div>
+      <ul id="vidItems" aria-label="Items identified in the video"></ul>
+      <button id="vidStop" type="button">Stop &amp; finish</button>
+      <button id="vidSave" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Save annotated video
+      </button>
     </div>
 
-    <div class="slider">
-      <div><label for="conf">Minimum confidence</label><output id="confOut">40%</output></div>
-      <input type="range" id="conf" min="0.2" max="0.8" step="0.05" value="0.4">
+    <div class="slider-group">
+      <div class="slider-header">
+        <label for="conf">AI Confidence Threshold</label>
+        <output id="confOut">40%</output>
+      </div>
+      <input type="range" id="conf" min="0.2" max="0.95" step="0.05" value="0.4">
     </div>
-
-    <div id="view">
-      <video id="video" autoplay playsinline muted></video>
-      <img id="preview" alt="Annotated detection result" hidden>
-      <div class="empty" id="viewEmpty">The annotated result appears here.</div>
-      <div id="busy"><div><div class="spinner"></div>Running model</div></div>
-    </div>
-    <div id="meta"></div>
   </section>
 
-  <!-- Twin, counters, log -->
-  <div class="right">
-    <section aria-labelledby="twin-h">
-      <div class="head-row">
-        <h2 id="twin-h">Sorting line</h2>
-        <button id="reset" type="button">Reset counts</button>
-      </div>
-      <svg id="twin" viewBox="0 0 920 330" role="img" aria-label="Conveyor belt with five sorting bins: plastic, paper, glass, metal and hazardous"></svg>
+  <!-- Zone 2: Digital Twin -->
+  <section class="glass-card zone-2">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2>2. Digital Twin</h2>
+      <button id="reset" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+        Reset Line
+      </button>
+    </div>
 
-      <div id="tiles"></div>
-
-      <h2>Recent detections</h2>
-      <div id="logwrap">
-        <div id="empty-log">No detections yet. Scan a frame to start the log.</div>
-        <table id="logtable" hidden>
-          <thead><tr><th>Time</th><th>Category</th><th>Class</th><th>Confidence</th></tr></thead>
-          <tbody id="log"></tbody>
-        </table>
+    <div id="twin-container">
+      <div class="cv-viewport" id="cvViewport" role="img" aria-label="3D conveyor belt carrying boxes into five material bins">
+        <canvas id="cvCanvas"></canvas>
+        <div class="cv-intake">INTAKE &#9660;</div>
       </div>
-    </section>
-  </div>
+    </div>
+
+    <div id="tiles" aria-live="polite">
+      <div class="tile total"><b id="count-total">0</b><span>Total Scanned</span></div>
+      <div class="tile plastic"><b id="count-plastic">0</b><span>Plastic</span></div>
+      <div class="tile paper"><b id="count-paper">0</b><span>Paper</span></div>
+      <div class="tile glass"><b id="count-glass">0</b><span>Glass</span></div>
+      <div class="tile metal"><b id="count-metal">0</b><span>Metal</span></div>
+      <div class="tile hazardous"><b id="count-hazardous">0</b><span>Hazardous</span></div>
+    </div>
+
+    <div id="alert" role="alert" aria-live="assertive"></div>
+  </section>
+
+  <!-- Zone 3: Audit & AI -->
+  <section class="glass-card zone-3">
+    <h2>3. Real-time Audit & AI</h2>
+    
+    <button id="genReport" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      AI Summary
+    </button>
+    <div id="logwrap" tabindex="0" aria-label="Recent Detections Table">
+      <div id="empty-log">No items detected yet.</div>
+      <table id="logtable" hidden>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Category</th>
+            <th>Conf.</th>
+          </tr>
+        </thead>
+        <tbody id="log"></tbody>
+      </table>
+    </div>
+
+  </section>
 </main>
 
+
+<div id="aiModal" class="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">
+    <div class="modal-head">
+      <h3 id="aiModalTitle">AI Summary</h3>
+      <button id="aiClose" type="button">Close</button>
+    </div>
+    <div id="reportBox" aria-live="polite">
+      <p style="color:var(--text-muted); text-align:center;">Run the line, then generate a report to receive AI insights on intake quality.</p>
+    </div>
+    <button id="savePdf" type="button" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Save Report as PDF
+    </button>
+    <div id="reportMeta"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Front-end logic: talks to the Flask backend (app.py): /health, /predict, /report -->
 <script>
-(() => {
-  const BINS = [
-    {key:'plastic',   label:'Plastic',   color:'var(--plastic)'},
-    {key:'paper',     label:'Paper',     color:'var(--paper)'},
-    {key:'glass',     label:'Glass',     color:'var(--glass)'},
-    {key:'metal',     label:'Metal',     color:'var(--metal)'},
-    {key:'hazardous', label:'Hazardous', color:'var(--hazardous)'},
-  ];
-  const BIN_CAPACITY = 30;          // items before a bin shows as full
-  const SPEED = 240;                // belt speed, px per second
-  const NS = 'http://www.w3.org/2000/svg';
-  const $ = id => document.getElementById(id);
-  const mk = (tag, attrs = {}, parent) => {
-    const el = document.createElementNS(NS, tag);
-    for (const k in attrs) el.setAttribute(k, attrs[k]);
-    if (parent) parent.appendChild(el);
-    return el;
+/* ==========================================================
+   3D CONVEYOR SETTINGS  -  tweak these numbers
+   (world units: belt is 19 long and 3 wide, bins are 3 wide)
+   ========================================================== */
+const CONVEYOR_CONFIG = {
+  binHeight: 1.1,   // wall height of the 5 bins.  Try 0.6 (shallow) to 2.0 (tall)
+  boxSize:   0.9,   // size of the cubes riding the belt.  Try 0.6 to 1.4
+  beltSpeed: 4      // belt + cube speed (units/second)
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Elements
+  const btnStart = document.getElementById('camStart');
+  const btnSnap = document.getElementById('camSnap');
+  const btnStop = document.getElementById('camStop');
+  const chkAuto = document.getElementById('auto');
+  const sldConf = document.getElementById('conf');
+  const outConf = document.getElementById('confOut');
+  const alertBox = document.getElementById('alert');
+  const logTbody = document.getElementById('log');
+  const logTable = document.getElementById('logtable');
+  const emptyLog = document.getElementById('empty-log');
+  
+  // Data state
+  const counts = { total: 0, plastic: 0, paper: 0, glass: 0, metal: 0, hazardous: 0 };
+  const BIN_CAPACITY = 20;                 // nominal items per bin, used to estimate fill % for the report
+  const classCounts = {};                  // detections per model class (plastic_bag, battery, ...)
+  let scanCount = 0, confSum = 0, confN = 0;   // scans done + running average confidence
+  const categories = ['plastic', 'paper', 'glass', 'metal', 'hazardous'];
+  const colors = {
+    plastic: '#0056b3', paper: '#b85d19', glass: '#0b7a44', metal: '#6a2c91', hazardous: '#d32f2f'
   };
+  const dropTargets = { plastic: 170, paper: 340, glass: 510, metal: 680, hazardous: 850 };
+  
+  let autoInterval = null;
+  const detections = [];   // newest first; feeds the PDF report
 
-  /* ---------- Build the twin ---------- */
-  const svg = $('twin');
-  const centers = BINS.map((_, i) => 100 + i * 180);
-  const BIN_TOP = 150, BIN_H = 140, FILL_MAX = 132;
-
-  mk('rect', {x:10, y:84, width:900, height:20, fill:'var(--belt)', rx:3}, svg);
-  mk('line', {x1:14, x2:906, y1:94, y2:94, class:'belt-dash'}, svg);
-  mk('circle', {cx:18, cy:94, r:14, fill:'#1d2623'}, svg);
-  mk('circle', {cx:902, cy:94, r:14, fill:'#1d2623'}, svg);
-
-  const doors = centers.map(cx =>
-    mk('rect', {x:cx - 24, y:84, width:48, height:20, class:'door'}, svg));
-
-  const itemLayer = mk('g', {}, svg);   // drawn before bins so items vanish behind them
-
-  const bins = BINS.map((b, i) => {
-    const cx = centers[i];
-    const g = mk('g', {}, svg);
-    const shell = mk('rect', {x:cx - 70, y:BIN_TOP, width:140, height:BIN_H, rx:4, class:'bin-shell'}, g);
-    const fill = mk('rect', {x:cx - 66, y:BIN_TOP + BIN_H - 4, width:132, height:0, fill:b.color, class:'bin-fill', opacity:.9}, g);
-    mk('text', {x:cx, y:BIN_TOP + BIN_H + 22, 'text-anchor':'middle', class:'bin-name'}, g).textContent = b.label;
-    const count = mk('text', {x:cx, y:BIN_TOP + BIN_H + 44, 'text-anchor':'middle', class:'bin-count'}, g);
-    count.textContent = '0';
-    return {key:b.key, shell, fill, count, n:0, alertTimer:null};
+  // --- UI Interactivity ---
+  sldConf.addEventListener('input', (e) => {
+    outConf.textContent = Math.round(e.target.value * 100) + '%';
   });
-  const binIndex = Object.fromEntries(BINS.map((b, i) => [b.key, i]));
 
-  /* ---------- Build the counter tiles ---------- */
-  const totals = {total:0};
-  BINS.forEach(b => totals[b.key] = 0);
-  const tiles = $('tiles');
-  const tileEls = {};
-  const addTile = (key, label, color, cls = '') => {
-    const d = document.createElement('div');
-    d.className = 'tile ' + cls;
-    if (color) d.style.borderLeftColor = color;
-    d.innerHTML = '<b>0</b><span>' + label + '</span>';
-    tiles.appendChild(d);
-    tileEls[key] = d.querySelector('b');
-  };
-  addTile('total', 'Items processed', '', 'total');
-  BINS.forEach(b => addTile(b.key, b.label, b.color));
+  // =====================================================================
+  //  Backend connection (app.py):  GET /health   POST /predict   POST /report
+  // =====================================================================
+  const API = { health: '/health', predict: '/predict', report: '/report' };
+  const statusEl = document.getElementById('status');
+  const busyEl = document.getElementById('busy');
+  const videoEl = document.getElementById('video');
+  const previewEl = document.getElementById('preview');
+  const viewEmptyEl = document.getElementById('viewEmpty');
+  const setMeta = t => { document.getElementById('meta').textContent = t; };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let camStream = null, scanning = false, backendOk = false, revertTimer = null, modelName = 'model';
 
-  /* ---------- Twin animation ---------- */
-  const items = [];
-  function spawnItem(binKey, delayMs) {
-    const i = binIndex[binKey] ?? 0;
-    const el = mk('rect', {width:22, height:22, rx:3, fill:BINS[i].color, stroke:'#1d2623', 'stroke-width':1.5, visibility:'hidden'}, itemLayer);
-    items.push({el, bin:i, x:30, y:62, vy:0, tx:centers[i], phase:'belt', start:performance.now() + delayMs, shown:false});
+  function setStatus(text, ok = true) {
+    statusEl.textContent = text;
+    statusEl.style.background = ok ? '' : '#fee2e2';
+    statusEl.style.color = ok ? '' : '#991b1b';
+    statusEl.style.borderColor = ok ? '' : '#dc2626';
   }
-  function arrive(it) {
-    const b = bins[it.bin];
-    b.n++;
-    const h = Math.min(b.n / BIN_CAPACITY, 1) * FILL_MAX;
-    b.fill.setAttribute('height', h);
-    b.fill.setAttribute('y', BIN_TOP + BIN_H - 4 - h);
-    b.count.textContent = b.n;
-  }
-  let last = performance.now();
-  function frame(now) {
-    const dt = Math.min((now - last) / 1000, 0.05);
-    last = now;
-    const open = new Set();
-    for (let k = items.length - 1; k >= 0; k--) {
-      const it = items[k];
-      if (now < it.start) continue;
-      if (!it.shown) { it.shown = true; it.el.setAttribute('visibility', 'visible'); }
-      if (it.phase === 'belt') {
-        it.x += SPEED * dt;
-        if (it.x >= it.tx - 36) open.add(it.bin);
-        if (it.x >= it.tx) { it.x = it.tx; it.phase = 'drop'; }
-      } else {
-        it.vy += 900 * dt;
-        it.y += it.vy * dt;
-        open.add(it.bin);
-        if (it.y >= BIN_TOP) { arrive(it); it.el.remove(); items.splice(k, 1); continue; }
+
+  async function checkHealth() {
+    try {
+      const r = await fetch(API.health, { cache: 'no-store' });
+      const h = await r.json();
+      backendOk = h.status === 'ok';
+      if (typeof h.default_conf === 'number') {          // start at the server's default threshold
+        sldConf.value = h.default_conf;
+        outConf.textContent = Math.round(parseFloat(sldConf.value) * 100) + '%';
       }
-      it.el.setAttribute('transform', 'translate(' + (it.x - 11) + ' ' + it.y + ')');
+      modelName = h.model || modelName;
+      setStatus(backendOk ? `Online \u00b7 ${modelName}` : 'Backend error', backendOk);
+    } catch (err) {
+      backendOk = false;
+      setStatus('Backend offline', false);
     }
-    doors.forEach((d, i) => d.classList.toggle('open', open.has(i)));
-    requestAnimationFrame(frame);
+    return backendOk;
   }
-  requestAnimationFrame(frame);
+  checkHealth();
 
-  /* ---------- Hazard alert ---------- */
-  let alertTimer = null;
-  function hazardAlert(dets) {
-    const hz = dets.filter(d => d.bin === 'hazardous');
-    if (!hz.length) return;
-    const top = hz.reduce((a, b) => (b.confidence > a.confidence ? b : a));
-    const name = top.class.replace('_', ' ');
-    $('alert').textContent = 'Hazardous item detected: ' + name + ' (' + Math.round(top.confidence * 100) + '%). Route to the sealed bin and check the line.';
-    $('alert').classList.add('show');
-    const b = bins[binIndex.hazardous];
-    b.shell.classList.add('alert');
-    clearTimeout(alertTimer);
-    alertTimer = setTimeout(() => {
-      $('alert').classList.remove('show');
-      b.shell.classList.remove('alert');
-    }, 8000);
+  // Send one image to /predict. Resolves with the JSON, throws Error(message) otherwise.
+  async function postImage(blob, filename, live = false) {
+    const fd = new FormData();
+    fd.append('image', blob, filename);
+    if (live) fd.append('live', '1');
+    fd.append('conf', sldConf.value);
+    const res = await fetch(API.predict, { method: 'POST', body: fd });
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* non-JSON error page */ }
+    if (!res.ok || !data || data.status !== 'success') {
+      throw new Error((data && data.message) || `Server error (${res.status})`);
+    }
+    return data;
   }
 
-  /* ---------- Counters + log ---------- */
-  function addCounts(dets) {
-    dets.forEach(d => {
-      totals.total++;
-      totals[d.bin] = (totals[d.bin] || 0) + 1;
-    });
-    Object.keys(tileEls).forEach(k => tileEls[k].textContent = totals[k]);
-  }
-  function addLog(dets) {
-    if (!dets.length) return;
-    $('empty-log').hidden = true;
-    $('logtable').hidden = false;
-    const tbody = $('log');
-    const time = new Date().toLocaleTimeString();
-    dets.forEach(d => {
-      const tr = document.createElement('tr');
-      const color = BINS[binIndex[d.bin] ?? 0].color;
-      tr.innerHTML = '<td>' + time + '</td><td><span class="dot" style="background:' + color + '"></span>' +
-        BINS[binIndex[d.bin] ?? 0].label + '</td><td>' + d.class.replace('_', ' ') + '</td><td>' +
-        Math.round(d.confidence * 100) + '%</td>';
-      tbody.prepend(tr);
-    });
-    while (tbody.children.length > 40) tbody.lastChild.remove();
-  }
-  $('reset').addEventListener('click', () => {
-    Object.keys(totals).forEach(k => totals[k] = 0);
-    Object.keys(tileEls).forEach(k => tileEls[k].textContent = 0);
-    bins.forEach(b => {
-      b.n = 0; b.count.textContent = '0';
-      b.fill.setAttribute('height', 0);
-      b.fill.setAttribute('y', BIN_TOP + BIN_H - 4);
-    });
-    $('log').innerHTML = '';
-    $('logtable').hidden = true;
-    $('empty-log').hidden = false;
-  });
-
-  /* ---------- Model call ---------- */
-  let busy = false;
-  function setBusy(v) {
-    busy = v;
-    $('busy').classList.toggle('show', v);
-  }
-  async function sendBlob(blob, name) {
-    if (busy) return;
-    setBusy(true);
-    $('meta').textContent = '';
+  // Scan a still image (camera frame or uploaded photo) and push results to the twin.
+  async function scanImage(blob, name, hold = false) {
+    if (scanning) return;
+    scanning = true;
+    busyEl.classList.add('show');
+    btnSnap.disabled = true;
     try {
-      const fd = new FormData();
-      fd.append('image', blob, name);
-      fd.append('conf', $('conf').value);
-      const res = await fetch('/predict', {method:'POST', body:fd});
-      const data = await res.json();
-      if (!res.ok || data.status !== 'success') throw new Error(data.message || 'Request failed');
-      showResult(data);
-    } catch (e) {
-      $('meta').textContent = 'Could not scan this frame: ' + e.message;
+      const d = await postImage(blob, name);
+      backendOk = true; setStatus(`Online \u00b7 ${modelName}`); scanCount++;
+      previewEl.src = d.image_base64;                       // annotated image from the server
+      previewEl.hidden = false; viewEmptyEl.hidden = true; videoEl.hidden = true;
+      clearTimeout(revertTimer);
+      if (camStream && !hold) {                             // flash the result, then back to live view
+        revertTimer = setTimeout(() => { previewEl.hidden = true; videoEl.hidden = false; }, 1500);
+      }
+      d.detections.forEach(x => sortQueue.push({ category: x.bin, score: x.confidence, label: x.class, source: 'scan' }));
+      setMeta(d.total_count
+        ? `Detected ${d.total_count} item${d.total_count === 1 ? '' : 's'} \u00b7 ${d.inference_ms} ms`
+        : `No items detected at ${Math.round(sldConf.value * 100)}% confidence \u00b7 ${d.inference_ms} ms`);
+    } catch (err) {
+      console.error(err);
+      if (err instanceof TypeError) { backendOk = false; setStatus('Backend offline', false); setMeta('Cannot reach the server. Is app.py running?'); }
+      else setMeta('Scan failed: ' + err.message);
     } finally {
-      setBusy(false);
+      scanning = false;
+      busyEl.classList.remove('show');
+      if (camStream && !chkAuto.checked) btnSnap.disabled = false;
     }
   }
-  function showResult(data) {
-    $('preview').src = data.image_base64 || data.image_url;
-    $('preview').hidden = false;
-    $('viewEmpty').hidden = true;
-    const n = data.total_count;
-    $('meta').textContent = n
-      ? n + (n === 1 ? ' item' : ' items') + ' found in ' + data.inference_ms + ' ms'
-      : 'No items found at this confidence. Try lowering the minimum confidence.';
-    const dets = data.detections;
-    addCounts(dets);
-    addLog(dets);
-    dets.forEach((d, i) => spawnItem(d.bin, i * 450));
-    if (data.hazardous) hazardAlert(dets);
-  }
 
-  /* ---------- File input + drag and drop ---------- */
-  const handleFile = f => { if (f) { stopCamera(); sendBlob(f, f.name); } };
-  $('imageInput').addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value = ''; });
-  const drop = $('drop');
-  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
-  drop.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
-
-  /* ---------- Camera ---------- */
-  let stream = null, autoTimer = null;
-  const video = $('video'), canvas = document.createElement('canvas');
-  function setCamUI(on) {
-    $('camStart').disabled = on;
-    $('camSnap').disabled = !on;
-    $('camStop').disabled = !on;
-    $('auto').disabled = !on;
-    video.style.display = on ? 'block' : 'none';
-    if (on) { $('preview').hidden = true; $('viewEmpty').hidden = true; }
-    else if ($('preview').src) { $('preview').hidden = false; }
-    else { $('viewEmpty').hidden = false; }
-  }
-  async function startCamera() {
+  // --- Camera (real webcam) ---
+  btnStart.addEventListener('click', async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setMeta('Camera not available in this browser (needs localhost or HTTPS).'); return;
+    }
     try {
-      stream = await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280}}});
-      video.srcObject = stream;
-      setCamUI(true);
-    } catch (e) {
-      $('meta').textContent = 'Camera unavailable: ' + e.message;
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    } catch (err) {
+      setMeta('Camera unavailable: ' + err.message); return;
     }
-  }
-  function stopCamera() {
-    clearInterval(autoTimer); autoTimer = null;
-    $('auto').checked = false;
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    video.srcObject = null;
-    setCamUI(false);
-  }
-  function snap() {
-    if (!stream || !video.videoWidth) return;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    canvas.toBlob(b => b && sendBlob(b, 'frame.jpg'), 'image/jpeg', 0.9);
-  }
-  $('camStart').addEventListener('click', startCamera);
-  $('camStop').addEventListener('click', stopCamera);
-  $('camSnap').addEventListener('click', snap);
-  $('auto').addEventListener('change', e => {
-    clearInterval(autoTimer);
-    if (e.target.checked) { snap(); autoTimer = setInterval(snap, 2000); }
+    stopVideoNow(); vidCanvas.hidden = true;                // leave video-analysis mode
+    videoEl.srcObject = camStream;
+    videoEl.hidden = false; previewEl.hidden = true; viewEmptyEl.hidden = true;
+    setMeta('Live feed active');
+    btnStart.disabled = true;
+    btnSnap.disabled = false;
+    btnStop.disabled = false;
+    chkAuto.disabled = false;
+    chkLive.disabled = false; chkLive.checked = true; startLive();   // live model view starts with the camera
   });
 
-  $('conf').addEventListener('input', e => $('confOut').textContent = Math.round(e.target.value * 100) + '%');
+  const stopCam = () => {
+    stopLive(); chkLive.disabled = true;
+    clearInterval(autoInterval); clearTimeout(revertTimer);
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    videoEl.srcObject = null; videoEl.hidden = true;
+    viewEmptyEl.hidden = !previewEl.hidden || !vidCanvas.hidden;
+    setMeta('Camera disconnected');
+    btnStart.disabled = false;
+    btnSnap.disabled = true;
+    btnStop.disabled = true;
+    chkAuto.disabled = true;
+    chkAuto.checked = false;
+  };
+  btnStop.addEventListener('click', stopCam);
 
-  /* ---------- Model status ---------- */
-  fetch('/health').then(r => r.json()).then(h => {
-    const s = $('status');
-    s.textContent = 'Model ready, ' + h.classes.length + ' classes';
-    s.classList.add('ok');
-  }).catch(() => {
-    const s = $('status');
-    s.textContent = 'Server not reachable';
-    s.classList.add('bad');
+  chkAuto.addEventListener('change', (e) => {
+    clearInterval(autoInterval);
+    if (e.target.checked) {
+      triggerCapture();
+      autoInterval = setInterval(triggerCapture, 2000);
+    }
   });
+
+  function frameBlob() {
+    return new Promise((resolve, reject) => {
+      const w = videoEl.videoWidth, h = videoEl.videoHeight;
+      if (!w || !h) return reject(new Error('Camera is not ready yet'));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(videoEl, 0, 0, w, h);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('Could not capture the frame')), 'image/jpeg', 0.9);
+    });
+  }
+
+
+  // --- Live detection: runs the model on the camera feed continuously (boxes only, not added to the counts) ---
+  const chkLive = document.getElementById('live');
+  const liveCanvas = document.getElementById('liveCanvas');
+  const liveBadge = document.getElementById('liveBadge');
+  const liveFrame = document.createElement('canvas');
+  const LIVE_COLORS = { plastic: '#6fb6ff', paper: '#ff9a4d', glass: '#7ed36f', metal: '#c59bff', hazardous: '#ff6b5c' };
+  let liveToken = 0, liveFps = 0;
+
+  function clearLive() { liveCanvas.getContext('2d').clearRect(0, 0, liveCanvas.width, liveCanvas.height); }
+
+  function liveBlob() {                                  // small, fast frame for the live loop
+    return new Promise(resolve => {
+      const vw = videoEl.videoWidth, vh = videoEl.videoHeight;
+      if (!vw || !vh) return resolve(null);
+      const k = Math.min(1, 640 / vw);
+      liveFrame.width = Math.round(vw * k); liveFrame.height = Math.round(vh * k);
+      liveFrame.getContext('2d').drawImage(videoEl, 0, 0, liveFrame.width, liveFrame.height);
+      liveFrame.toBlob(b => resolve(b), 'image/jpeg', 0.7);
+    });
+  }
+
+  function drawLive(dets) {
+    const view = document.getElementById('view'), cw = view.clientWidth, ch = view.clientHeight, k = 2;
+    if (liveCanvas.width !== cw * k || liveCanvas.height !== ch * k) { liveCanvas.width = cw * k; liveCanvas.height = ch * k; }
+    const g = liveCanvas.getContext('2d');
+    g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, cw, ch);
+    if (!videoEl.offsetWidth) return;
+    const sx = videoEl.offsetWidth / liveFrame.width, sy = videoEl.offsetHeight / liveFrame.height;
+    g.lineJoin = 'round'; g.textBaseline = 'middle';
+    g.font = '17px "Patrick Hand", "Comic Sans MS", cursive';
+    dets.forEach(d => {
+      const [x1, y1, x2, y2] = d.bbox;
+      const x = videoEl.offsetLeft + x1 * sx, y = videoEl.offsetTop + y1 * sy, w = (x2 - x1) * sx, h = (y2 - y1) * sy;
+      const col = LIVE_COLORS[d.bin] || '#ffc93c';
+      g.strokeStyle = '#111'; g.lineWidth = 6; g.strokeRect(x, y, w, h);     // dark under-stroke so it shows on any background
+      g.strokeStyle = col;    g.lineWidth = 3; g.strokeRect(x, y, w, h);
+      const label = d.class.replace(/_/g, ' ') + ' ' + Math.round(d.confidence * 100) + '%';
+      const tw = g.measureText(label).width + 12, th = 22, ty = y - th >= 0 ? y - th : y;
+      g.fillStyle = col; g.fillRect(x - 1.5, ty, tw, th);
+      g.strokeStyle = '#111'; g.lineWidth = 2; g.strokeRect(x - 1.5, ty, tw, th);
+      g.fillStyle = '#111'; g.fillText(label, x + 4, ty + th / 2 + 1);
+    });
+  }
+
+  async function liveLoop(token) {
+    while (token === liveToken && camStream && chkLive.checked) {
+      if (scanning || !previewEl.hidden || videoEl.hidden) { clearLive(); await sleep(150); continue; }   // pause during manual scans
+      const t0 = performance.now();
+      try {
+        const blob = await liveBlob();
+        if (!blob) { await sleep(150); continue; }
+        const d = await postImage(blob, 'live.jpg', true);
+        if (token !== liveToken) break;
+        if (!backendOk) { backendOk = true; setStatus(`Online \u00b7 ${modelName}`); }
+        drawLive(d.detections);
+        const dt = performance.now() - t0;
+        liveFps = liveFps ? liveFps * 0.7 + (1000 / dt) * 0.3 : 1000 / dt;
+        setMeta(`LIVE \u00b7 ${d.total_count} item${d.total_count === 1 ? '' : 's'} \u00b7 ${d.inference_ms} ms \u00b7 ${liveFps.toFixed(1)} fps`);
+      } catch (err) {
+        if (err instanceof TypeError) { backendOk = false; setStatus('Backend offline', false); setMeta('Live view: cannot reach the server.'); await sleep(1500); }
+        else await sleep(500);
+      }
+      await sleep(Math.max(0, 60 - (performance.now() - t0)));
+    }
+    if (token === liveToken) clearLive();
+  }
+
+  function startLive() { if (!camStream || !chkLive.checked) return; liveToken++; liveFps = 0; liveBadge.hidden = false; liveLoop(liveToken); }
+  function stopLive() { liveToken++; liveBadge.hidden = true; clearLive(); }
+  chkLive.addEventListener('change', () => {
+    if (chkLive.checked) startLive(); else { stopLive(); if (camStream) setMeta('Live feed active'); }
+  });
+
+  const triggerCapture = async () => {
+    if (!camStream || scanning) return;
+    try { await scanImage(await frameBlob(), 'capture.jpg'); }
+    catch (err) { setMeta(err.message); }
+  };
+  btnSnap.addEventListener('click', triggerCapture);
+
+  // --- Drag and drop / file picker ---
+  const dropZone = document.getElementById('drop');
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = 'rgba(59, 130, 246, 0.2)'; });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.background = 'rgba(255,255,255,0.6)'; });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.style.background = 'rgba(255,255,255,0.6)';
+    handleFile(e.dataTransfer.files[0]);
+  });
+  document.getElementById('imageInput').addEventListener('change', (e) => {
+    handleFile(e.target.files[0]);
+    e.target.value = '';           // lets you pick the same file again
+  });
+  // videos go to the video analyser, images are sent to /predict
+  function handleFile(file) {
+    if (!file) return;
+    if (file.type.startsWith('video/')) { stopCam(); analyseVideo(file); }
+    else if (file.type.startsWith('image/')) { scanImage(file, file.name, true); }
+    else setMeta('Unsupported file. Upload an image (jpg, png, bmp, webp) or a video.');
+  }
+
+  // --- Digital Twin Animation & Data Handling ---
+  function handleDetection(category, confidence, source = 'scan', label = '') {
+    // 1. Update Counts
+    counts.total++;
+    counts[category]++;
+    if (label) classCounts[label] = (classCounts[label] || 0) + 1;
+    confSum += confidence; confN++;
+    document.getElementById('count-total').textContent = counts.total;
+    document.getElementById(`count-${category}`).textContent = counts[category];
+
+    // 2. Alert if Hazardous
+    if(category === 'hazardous') {
+      alertBox.textContent = `⚠️ HAZARD DETECTED: Critical sorting required (Confidence: ${Math.round(confidence*100)}%)`;
+      alertBox.classList.add('show');
+      setTimeout(() => alertBox.classList.remove('show'), 4000);
+    }
+
+    detections.unshift({ time: new Date().toLocaleTimeString(), category, confidence, source, label });
+    if (detections.length > 500) detections.pop();
+
+    // 3. Update Audit Log
+    emptyLog.hidden = true;
+    logTable.hidden = false;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${new Date().toLocaleTimeString()}</td>
+      <td><span class="badge" style="background:${colors[category]}">${category.toUpperCase()}</span>${label ? ` <small>${esc(label)}</small>` : ''}</td>
+      <td>${Math.round(confidence * 100)}%</td>
+    `;
+    logTbody.prepend(row);
+    if(logTbody.children.length > 50) logTbody.lastElementChild.remove();
+
+    // 4. SVG Animation
+    animateConveyor(category);
+  }
+
+  function animateConveyor(category) { if (cv) cv.spawn(category); }
+
+  // =========================================================
+  //  3D conveyor (three.js). Belt runs along +X; bins sit in front (+Z).
+  //  Flow: box drops in -> rides belt -> colour-coded arm flicks it off the
+  //  front edge -> it tumbles into its bin.   Settings: CONVEYOR_CONFIG (top of script).
+  // =========================================================
+  function initConveyor3D() {
+    const wrap = document.getElementById('cvViewport');
+    const canvas = document.getElementById('cvCanvas');
+    if (typeof THREE === 'undefined') {
+      wrap.insertAdjacentHTML('beforeend', '<div class="cv-fallback">3D view unavailable (three.js could not be loaded). Counts and log still work.</div>');
+      return null;
+    }
+    const cfg = CONVEYOR_CONFIG;
+    const C = { speed: cfg.beltSpeed, size: cfg.boxSize, binH: cfg.binHeight, beltTop: 2, half: 9.5,
+                spawnX: -8.7, binZ: 4.6, binW: 3, binD: 3.2, g: 20 };
+    const layers = Math.max(1, Math.min(6, Math.floor(C.binH / C.size) + 1));
+    C.slots = layers * 4;                                  // boxes kept visible per bin
+    const xOf = cat => (dropTargets[cat] - 510) / 170 * 3.6;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(36, 1000 / 460, 0.1, 200);
+    const target = new THREE.Vector3(0, 1, 2.2);
+    const camDir = new THREE.Vector3(0, 12, 11.5).normalize();
+
+    // points that must stay on-screen (bin labels, belt ends, hopper, tall bin walls)
+    const frontZ = C.binZ + C.binD / 2 + 1.4;
+    const fitPts = [
+      [-10.2, 0, frontZ], [10.2, 0, frontZ], [-10.2, 5.4, -1.9], [10.2, 5.4, -1.9],
+      [-8.8, C.binH + 0.2, C.binZ + C.binD / 2], [8.8, C.binH + 0.2, C.binZ + C.binD / 2]
+    ].map(p => new THREE.Vector3(p[0], p[1], p[2]));
+
+    function resize() {
+      const w = wrap.clientWidth, h = wrap.clientHeight;
+      if (!w || !h) return;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      for (let dist = 9; dist < 90; dist += 0.25) {         // pull back until everything fits
+        camera.position.copy(target).addScaledVector(camDir, dist);
+        camera.lookAt(target);
+        camera.updateMatrixWorld(true);
+        const ok = fitPts.every(p => { const v = p.clone().project(camera); return Math.abs(v.x) <= 0.97 && Math.abs(v.y) <= 0.95; });
+        if (ok) break;
+      }
+    }
+    new ResizeObserver(resize).observe(wrap);
+    resize();
+
+    // lights
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xaab2c0, 0.85));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.85);
+    sun.position.set(-6, 16, 9);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 14, bottom: -14, near: 0.5, far: 50 });
+    sun.shadow.bias = -0.0005;
+    scene.add(sun);
+
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 40), new THREE.ShadowMaterial({ opacity: 0.18 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const box = (w, h, d, mat, x, y, z, cast = true) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+      m.position.set(x, y, z); m.castShadow = cast; m.receiveShadow = true; scene.add(m); return m;
+    };
+    const std = (color, rough = 0.6, metal = 0) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
+
+    // ---- belt ----
+    const tc = document.createElement('canvas'); tc.width = tc.height = 64;
+    const tg = tc.getContext('2d');
+    tg.fillStyle = '#4b5563'; tg.fillRect(0, 0, 64, 64);
+    tg.fillStyle = '#7b8494'; tg.fillRect(0, 0, 8, 64);
+    const beltTex = new THREE.CanvasTexture(tc);
+    beltTex.wrapS = beltTex.wrapT = THREE.RepeatWrapping;
+    beltTex.repeat.set(38, 1);                     // 0.5 world units per stripe
+    const side = std(0x374151);
+    const topMat = new THREE.MeshStandardMaterial({ map: beltTex, roughness: 0.8 });
+    const topSlab = new THREE.Mesh(new THREE.BoxGeometry(19, 0.12, 3), [side, side, topMat, side, side, side]);
+    topSlab.position.set(0, 1.94, 0); topSlab.receiveShadow = true; topSlab.castShadow = true; scene.add(topSlab);
+    box(19, 0.08, 3, side, 0, 1.0, 0);                         // return belt
+    box(19.4, 1.2, 0.25, std(0x6b7280), 0, 1.7, -1.75);        // back wall
+
+    const rollers = [];
+    [-C.half, C.half].forEach(x => {
+      const g = new THREE.CylinderGeometry(0.5, 0.5, 3.1, 28); g.rotateX(Math.PI / 2);
+      const r = new THREE.Mesh(g, std(0x9ca3af, 0.4, 0.5));
+      r.position.set(x, 1.5, 0); r.castShadow = true; r.receiveShadow = true;
+      r.add(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.8, 3.14), std(0x1f2937)));
+      scene.add(r); rollers.push(r);
+    });
+    const legMat = std(0x4b5563, 0.7);
+    [-8, -4, 0, 4, 8].forEach(x => [-1.3, 1.3].forEach(z => box(0.25, 1.0, 0.25, legMat, x, 0.5, z)));
+    [-1.3, 1.3].forEach(z => box(19, 0.12, 0.12, legMat, 0, 0.6, z));
+
+    // intake hopper (scales with box size)
+    const hs = Math.max(1, C.size / 0.9);
+    const hg = new THREE.CylinderGeometry(1.3 * hs, 0.9 * hs, 1.0, 4, 1, true); hg.rotateY(Math.PI / 4);
+    const hopper = new THREE.Mesh(hg, new THREE.MeshStandardMaterial({ color: 0x9ca3af, side: THREE.DoubleSide, transparent: true, opacity: 0.7, roughness: 0.5 }));
+    hopper.position.set(C.spawnX, 3.5, 0); hopper.castShadow = true; scene.add(hopper);
+
+    // ---- bins, labels, flick arms ----
+    const pivotY = C.beltTop + C.size / 2;
+    const ARM_LEN = 2.0;
+    const pad = {};
+    categories.forEach(cat => {
+      const x = xOf(cat), col = new THREE.Color(colors[cat]);
+      const wall = std(col, 0.55), H = C.binH;
+      box(C.binW, 0.1, C.binD, std(col.clone().multiplyScalar(0.55), 0.7), x, 0.05, C.binZ);
+      box(C.binW, H, 0.12, wall, x, H / 2, C.binZ - C.binD / 2 + 0.06);
+      box(C.binW, H, 0.12, wall, x, H / 2, C.binZ + C.binD / 2 - 0.06);
+      box(0.12, H, C.binD, wall, x - C.binW / 2 + 0.06, H / 2, C.binZ);
+      box(0.12, H, C.binD, wall, x + C.binW / 2 - 0.06, H / 2, C.binZ);
+
+      const lc = document.createElement('canvas'); lc.width = 300; lc.height = 94;
+      const lg = lc.getContext('2d');
+      lg.font = '800 54px "Plus Jakarta Sans", system-ui, sans-serif';
+      lg.textAlign = 'center'; lg.textBaseline = 'middle'; lg.fillStyle = colors[cat];
+      lg.fillText(cat === 'hazardous' ? 'HAZARD' : cat.toUpperCase(), 150, 47);
+      const label = new THREE.Mesh(new THREE.PlaneGeometry(3, 0.94), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(lc), transparent: true }));
+      label.rotation.x = -Math.PI / 2; label.position.set(x, 0.02, C.binZ + C.binD / 2 + 0.8); scene.add(label);
+
+      box(0.9, 0.5, 0.5, std(0x374151), x, pivotY + 0.15, -1.8);   // arm housing on back wall
+      const group = new THREE.Group();                              // pivot at back of belt
+      group.position.set(x, pivotY, -1.5);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.3, ARM_LEN, 0.22), std(col, 0.5));
+      arm.position.y = ARM_LEN / 2; arm.castShadow = true;
+      const hg2 = new THREE.CylinderGeometry(0.22, 0.22, 0.4, 16); hg2.rotateZ(Math.PI / 2);
+      group.add(arm, new THREE.Mesh(hg2, std(0x1f2937)));
+      scene.add(group);
+      pad[cat] = { group, t: null };                                // t = swing clock (null = stowed)
+    });
+    // swing: wind-up/hit in 0.12s, hold, then return.  Arm stows pointing up.
+    function swingAngle(p, dt) {
+      if (p.t === null) return;
+      p.t += dt;
+      let a = 0;
+      if (p.t < 0.12) { const u = p.t / 0.12; a = 105 * u * u; }
+      else if (p.t < 0.18) a = 105;
+      else if (p.t < 0.45) a = 105 * (1 - (p.t - 0.18) / 0.27);
+      else p.t = null;
+      p.group.rotation.x = a * Math.PI / 180;
+    }
+
+    // ---- boxes ----
+    const cubeGeo = new THREE.BoxGeometry(C.size, C.size, C.size);
+    const edgeGeo = new THREE.EdgesGeometry(cubeGeo);
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35 });
+    const cubeMat = {};
+    categories.forEach(c => cubeMat[c] = std(colors[c], 0.45, 0.05));
+    const makeCube = cat => {
+      const m = new THREE.Mesh(cubeGeo, cubeMat[cat]);
+      m.castShadow = m.receiveShadow = true;
+      m.add(new THREE.LineSegments(edgeGeo, edgeMat));
+      scene.add(m); return m;
+    };
+
+    const cubes = [];
+    const binCubes = {}, landed = {};
+    categories.forEach(c => { binCubes[c] = []; landed[c] = 0; });
+    const spreadX = Math.min(C.size * 1.45, C.binW - 0.24 - C.size);
+    const spreadZ = Math.min(C.size * 1.45, C.binD - 0.24 - C.size);
+    const slotPos = (cat, n) => {
+      const s = n % C.slots, col = s % 2, row = (s >> 1) % 2, layer = s >> 2;
+      return { x: xOf(cat) + (col - 0.5) * spreadX, y: 0.1 + C.size / 2 + layer * C.size, z: C.binZ + (row - 0.5) * spreadZ };
+    };
+    const restY = C.beltTop + C.size / 2;
+
+    function startFall(q) {
+      q.fall = { t: 0, T: Math.sqrt(2 * (q.y - q.slot.y) / C.g), sx: q.x, sy: q.y, sz: q.z };
+      q.phase = 'fall';
+    }
+
+    function update(dt) {
+      beltTex.offset.x -= C.speed * dt * 2;
+      rollers.forEach(r => r.rotation.z -= C.speed * dt / 0.5);
+      categories.forEach(c => swingAngle(pad[c], dt));
+
+      for (let i = cubes.length - 1; i >= 0; i--) {
+        const q = cubes[i], p = pad[q.cat];
+        if (q.phase === 'drop') {
+          q.vy -= C.g * dt; q.y += q.vy * dt;
+          if (q.y <= restY) { q.y = restY; q.phase = 'belt'; }
+        } else if (q.phase === 'belt') {
+          q.x += C.speed * dt;
+          if (q.x >= q.tx) { q.x = q.tx; q.phase = 'wait'; p.t = 0; }       // arm starts to swing
+        } else if (q.phase === 'wait') {
+          if (p.t === null || p.t >= 0.1) {                                  // arm connects: FLICK
+            q.n = landed[q.cat]++;
+            q.slot = slotPos(q.cat, q.n);
+            const old = binCubes[q.cat][q.n % C.slots];
+            if (old) scene.remove(old);
+            const T = Math.sqrt(2 * (restY - q.slot.y) / C.g);
+            q.vz = (q.slot.z - 1.5) / T;                                     // exact speed to reach slot
+            q.phase = 'slide';
+          }
+        } else if (q.phase === 'slide') {
+          q.z += q.vz * dt;                                                  // skids across belt
+          q.mesh.rotation.x += dt * 4;
+          if (q.z >= 1.5) { startFall(q); }
+        } else if (q.phase === 'fall') {
+          const f = q.fall; f.t += dt;
+          const tt = Math.min(f.t, f.T), u = tt / f.T;
+          q.x = f.sx + (q.slot.x - f.sx) * u;
+          q.z = f.sz + (q.slot.z - f.sz) * u;
+          q.y = f.sy - 0.5 * C.g * tt * tt;
+          q.mesh.rotation.x = u * Math.PI / 2;                               // tumbles, lands flat
+          q.mesh.rotation.y = (q.n % 3 - 1) * 0.15 * u;
+          if (f.t >= f.T) {
+            binCubes[q.cat][q.n % C.slots] = q.mesh;
+            cubes.splice(i, 1);
+          }
+        }
+        q.mesh.position.set(q.x, q.y, q.z);
+      }
+    }
+
+    let last = performance.now();
+    (function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.05); last = now;
+      update(dt);
+      renderer.render(scene, camera);
+      requestAnimationFrame(frame);
+    })(last);
+
+    return {
+      spawn(cat) {
+        cubes.push({ cat, mesh: makeCube(cat), phase: 'drop', x: C.spawnX, y: 4.8, z: 0, vy: 0, tx: xOf(cat) });
+      },
+      reset() {
+        cubes.forEach(q => scene.remove(q.mesh)); cubes.length = 0;
+        categories.forEach(c => {
+          binCubes[c].forEach(m => m && scene.remove(m)); binCubes[c] = []; landed[c] = 0;
+          pad[c].t = null; pad[c].group.rotation.x = 0;
+        });
+      }
+    };
+  }
+
+  let cv = null;
+  try { cv = initConveyor3D(); } catch (err) { console.error('3D conveyor failed to start', err); }
+
+  // --- Reset Function ---
+  document.getElementById('reset').addEventListener('click', () => {
+    Object.keys(counts).forEach(k => counts[k] = 0);
+    Object.keys(classCounts).forEach(k => delete classCounts[k]);
+    scanCount = 0; confSum = 0; confN = 0;
+    document.querySelectorAll('.tile b').forEach(el => el.textContent = '0');
+    logTbody.innerHTML = '';
+    emptyLog.hidden = false;
+    logTable.hidden = true;
+    if (cv) cv.reset();
+    detections.length = 0; lastReport = null; savePdfBtn.hidden = true; resetVideo();
+    sortQueue.length = 0; clearTimeout(revertTimer);
+    previewEl.hidden = true; previewEl.removeAttribute('src');
+    if (camStream) videoEl.hidden = false; else viewEmptyEl.hidden = false;
+  });
+
+  // =====================================================================
+  //  Helpers
+  // =====================================================================
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const loadScript = src => new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = () => rej(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+  const metaEl = document.getElementById('meta');
+
+  // =====================================================================
+  //  VIDEO ANALYSIS
+  //  Plays the clip in slow motion, detects objects every frame it can, tracks them so
+  //  each physical item is counted once, sends them onto the 3D belt, and records an
+  //  annotated copy you can save.
+  //  Each frame is sent to the Flask backend (/predict) and the YOLO detections are tracked here.
+  // =====================================================================
+  const VIDEO_CFG = {
+    maxWidth: 960,     // saved video width (px)
+    sendWidth: 640,    // frames are downscaled to this width before being sent to /predict
+    trackWindow: 2.0,  // seconds an item can vanish and still count as the same item
+    minHits: 2         // frames an item must appear in before it is counted
+  };
+  const vidCanvas = document.getElementById('vidCanvas');
+  const vctx = vidCanvas.getContext('2d');
+  const vidPanel = document.getElementById('vidPanel');
+  const vidRate = document.getElementById('vidRate');
+  const vidBar = document.getElementById('vidBar');
+  const vidStatus = document.getElementById('vidStatus');
+  const vidItems = document.getElementById('vidItems');
+  const vidStop = document.getElementById('vidStop');
+  const vidSave = document.getElementById('vidSave');
+  let vstate = null, videoResult = null, savedVideo = null;
+  const sortQueue = [];
+
+  // feed identified items onto the belt, one at a time so boxes don't overlap
+  setInterval(() => {
+    const k = sortQueue.shift();
+    if (k) handleDetection(k.category, k.score, k.source || 'video', k.label);
+  }, 450);
+
+  // Make sure the backend is reachable before starting.
+  async function ensureModel() {
+    vidStatus.textContent = 'Connecting to the detection server...';
+    if (!backendOk && !(await checkHealth())) throw new Error('Backend offline');
+  }
+
+  const frameCanvas = document.createElement('canvas');
+  async function detectFrame(v) {
+    const s = Math.min(1, VIDEO_CFG.sendWidth / v.videoWidth);
+    const w = Math.round(v.videoWidth * s), h = Math.round(v.videoHeight * s);
+    frameCanvas.width = w; frameCanvas.height = h;
+    frameCanvas.getContext('2d').drawImage(v, 0, 0, w, h);
+    const blob = await new Promise(r => frameCanvas.toBlob(r, 'image/jpeg', 0.8));
+    if (!blob) throw new Error('Could not encode the video frame');
+    const d = await postImage(blob, 'frame.jpg');
+    // server bbox = [x1,y1,x2,y2] in sent-frame pixels  ->  [x,y,w,h] in video pixels
+    return d.detections.map(x => {
+      const [x1, y1, x2, y2] = x.bbox;
+      return { label: x.class, score: x.confidence, bbox: [x1 / s, y1 / s, (x2 - x1) / s, (y2 - y1) / s], category: x.bin };
+    });
+  }
+
+  function createTracker(frameDiag) {
+    const tracks = []; let nextId = 1;
+    return {
+      tracks,
+      update(dets, t) {                       // returns tracks that just became "confirmed"
+        const fresh = [], used = new Set();
+        dets.forEach(d => {
+          const cx = d.bbox[0] + d.bbox[2] / 2, cy = d.bbox[1] + d.bbox[3] / 2;
+          let best = null, bd = Infinity;
+          tracks.forEach(k => {
+            if (used.has(k.id) || k.label !== d.label || t - k.lastT > VIDEO_CFG.trackWindow) return;
+            const dist = Math.hypot(cx - k.cx, cy - k.cy);
+            if (dist < bd && dist < frameDiag * 0.15) { bd = dist; best = k; }
+          });
+          if (best) {
+            used.add(best.id);
+            Object.assign(best, { cx, cy, lastT: t }); best.hits++; best.score = Math.max(best.score, d.score);
+            if (!best.confirmed && best.hits >= VIDEO_CFG.minHits) { best.confirmed = true; fresh.push(best); }
+          } else {
+            const k = { id: nextId++, label: d.label, category: d.category, cx, cy, lastT: t, hits: 1, score: d.score, confirmed: false };
+            used.add(k.id); tracks.push(k);
+            if (VIDEO_CFG.minHits <= 1) { k.confirmed = true; fresh.push(k); }
+          }
+        });
+        return fresh;
+      }
+    };
+  }
+
+  function drawOverlay(dets, scale) {
+    vctx.lineWidth = 3; vctx.font = 'bold 16px sans-serif';
+    dets.forEach(d => {
+      const [x, y, w, h] = d.bbox.map(v => v * scale);
+      const col = d.category ? colors[d.category] : '#6b7280';
+      vctx.strokeStyle = col; vctx.strokeRect(x, y, w, h);
+      const txt = `${d.label} ${Math.round(d.score * 100)}%` + (d.category ? ` > ${d.category.toUpperCase()}` : '');
+      const tw = vctx.measureText(txt).width + 10, ty = y > 22 ? y - 22 : y;
+      vctx.fillStyle = col; vctx.fillRect(x, ty, tw, 22);
+      vctx.fillStyle = '#fff'; vctx.fillText(txt, x + 5, ty + 16);
+    });
+  }
+
+  async function analyseVideo(file) {
+    if (vstate) { stopVideoNow(); }
+    if (savedVideo) { URL.revokeObjectURL(savedVideo.url); savedVideo = null; }
+    videoResult = null; sortQueue.length = 0;
+    vidPanel.hidden = false; vidSave.hidden = true; vidStop.hidden = false; vidStop.disabled = false;
+    vidItems.innerHTML = ''; vidBar.value = 0;
+    document.getElementById('viewEmpty').hidden = true;
+    document.getElementById('preview').hidden = true;
+    vidCanvas.hidden = false;
+    metaEl.textContent = 'Preparing video...';
+
+    try { await ensureModel(); }
+    catch (err) { console.error(err); vidStatus.textContent = 'Could not reach the detection server. Is app.py running?'; setStatus('Backend offline', false); return; }
+
+    const vid = document.createElement('video');
+    vid.muted = true; vid.playsInline = true; vid.preload = 'auto';
+    vid.src = URL.createObjectURL(file);
+    try { await new Promise((res, rej) => { vid.onloadedmetadata = res; vid.onerror = () => rej(new Error('bad video')); }); }
+    catch (err) { vidStatus.textContent = 'Could not read that video file.'; return; }
+
+    const scale = Math.min(1, VIDEO_CFG.maxWidth / vid.videoWidth);
+    const cw = Math.round(vid.videoWidth * scale) & ~1, ch = Math.round(vid.videoHeight * scale) & ~1;
+    vidCanvas.width = cw; vidCanvas.height = ch;
+
+    const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
+      .find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+    const st = {
+      vid, file, running: true, chunks: [], mime, rec: null, dets: [], rate: parseFloat(vidRate.value),
+      tracker: createTracker(Math.hypot(vid.videoWidth, vid.videoHeight))
+    };
+    if (mime) {
+      st.rec = new MediaRecorder(vidCanvas.captureStream(30), { mimeType: mime, videoBitsPerSecond: 4000000 });
+      st.rec.ondataavailable = e => { if (e.data.size) st.chunks.push(e.data); };
+      st.rec.start(500);
+    }
+    st.drawFrame = () => {
+      vctx.drawImage(vid, 0, 0, cw, ch);
+      drawOverlay(st.dets, scale);
+      const found = st.tracker.tracks.filter(k => k.confirmed).length;
+      const hud = `SLOW-MO ${st.rate}x   |   ${found} item${found === 1 ? '' : 's'} found`;
+      vctx.font = 'bold 18px sans-serif';
+      vctx.fillStyle = 'rgba(0,0,0,0.6)'; vctx.fillRect(10, 10, vctx.measureText(hud).width + 20, 30);
+      vctx.fillStyle = '#fff'; vctx.fillText(hud, 20, 31);
+    };
+    vstate = st;
+    vid.playbackRate = st.rate;
+    vid.onended = () => finishVideo(false);
+    try { await vid.play(); }
+    catch (err) { vidStatus.textContent = 'The browser blocked video playback.'; stopVideoNow(); return; }
+
+    // render loop (also what gets recorded)
+    let tick = 0;
+    const draw = () => {
+      if (vstate !== st || !st.running) return;
+      st.drawFrame();
+      if (vid.duration && (tick++ % 8 === 0)) {
+        const p = vid.currentTime / vid.duration, found = st.tracker.tracks.filter(k => k.confirmed).length;
+        vidBar.value = p;
+        vidStatus.textContent = `Analysing at ${st.rate}x slow-motion - ${Math.round(p * 100)}% - ${found} item(s) found`;
+        metaEl.textContent = `Analysing video: ${found} item(s) found`;
+      }
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+
+    // detection loop (runs as fast as the model allows; slow-mo gives it more frames per second of footage)
+    (async () => {
+      while (vstate === st && st.running) {
+        if (vid.readyState >= 2 && !vid.paused && !vid.ended) {
+          const t = vid.currentTime;
+          try {
+            const dets = await detectFrame(vid);
+            if (vstate !== st || !st.running) break;
+            st.dets = dets;
+            st.tracker.update(dets, t).forEach(k => { if (k.category) sortQueue.push(k); });
+          } catch (err) { console.error(err); vidStatus.textContent = 'Detection error: ' + err.message; await sleep(500); }
+          await sleep(0);
+        } else {
+          await sleep(30);
+        }
+      }
+    })();
+  }
+
+  vidRate.addEventListener('change', () => {
+    if (vstate) { vstate.rate = parseFloat(vidRate.value); vstate.vid.playbackRate = vstate.rate; }
+  });
+  vidStop.addEventListener('click', () => finishVideo(true));
+
+  function stopVideoNow() {              // abort without a summary (used by reset / new upload)
+    const st = vstate; if (!st) return;
+    st.running = false; vstate = null;
+    try { st.vid.pause(); } catch (e) {}
+    if (st.rec && st.rec.state !== 'inactive') { st.rec.ondataavailable = null; try { st.rec.stop(); } catch (e) {} }
+  }
+
+  async function finishVideo(stoppedEarly) {
+    const st = vstate; if (!st || !st.running) return;
+    st.drawFrame();                       // make sure the last frame is in the recording
+    st.running = false;
+    st.vid.pause();
+    vidStop.disabled = true;
+
+    const groups = {};
+    st.tracker.tracks.filter(k => k.confirmed).forEach(k => {
+      const g = groups[k.label] || (groups[k.label] = { label: k.label, category: k.category, count: 0 });
+      g.count++;
+    });
+    const items = Object.values(groups).sort((a, b) => b.count - a.count);
+    const total = items.reduce((s, g) => s + g.count, 0);
+    vidItems.innerHTML = items.length ? items.map(g => `
+      <li><span>${g.label} &times;${g.count}</span>
+      <span class="badge" style="background:${g.category ? colors[g.category] : '#6b7280'}">${g.category ? g.category.toUpperCase() : 'NOT SORTED'}</span></li>`).join('')
+      : '<li>No recognisable items found. Try lowering the confidence threshold.</li>';
+    scanCount++;
+    videoResult = { name: st.file.name, duration: st.vid.duration, rate: st.rate, items, total, stoppedEarly };
+
+    if (st.rec && st.rec.state !== 'inactive') await new Promise(res => { st.rec.onstop = res; st.rec.stop(); });
+    if (st.chunks.length) {
+      const type = st.mime.split(';')[0];
+      const ext = type.includes('mp4') ? 'mp4' : 'webm';
+      const base = st.file.name.replace(/\.[^.]+$/, '');
+      savedVideo = { url: URL.createObjectURL(new Blob(st.chunks, { type })), name: `annotated-slowmo-${base}.${ext}` };
+      vidSave.hidden = false;
+    }
+    vidBar.value = 1;
+    vidStatus.textContent = (stoppedEarly ? 'Stopped early. ' : 'Done. ') + `${total} item(s) identified at ${st.rate}x slow-motion.`
+      + (savedVideo ? '' : ' (This browser cannot record video, so nothing to save.)');
+    metaEl.textContent = `Video analysed: ${total} item(s) identified`;
+    if (vstate === st) vstate = null;
+  }
+
+  vidSave.addEventListener('click', () => {
+    if (!savedVideo) return;
+    const a = document.createElement('a');
+    a.href = savedVideo.url; a.download = savedVideo.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  function resetVideo() {
+    stopVideoNow(); sortQueue.length = 0; videoResult = null;
+    if (savedVideo) { URL.revokeObjectURL(savedVideo.url); savedVideo = null; }
+    vidPanel.hidden = true; vidCanvas.hidden = true;
+    if (btnStart.disabled === false) document.getElementById('viewEmpty').hidden = false;
+  }
+
+  // =====================================================================
+  //  AI report + PDF export
+  // =====================================================================
+  const savePdfBtn = document.getElementById('savePdf');
+  let lastReport = null;
+
+  function buildReport() {
+    const keys = Object.keys(counts).filter(k => k !== 'total');
+    const mostCommon = keys.reduce((a, b) => counts[a] > counts[b] ? a : b);
+    return {
+      generated: new Date(), total: counts.total, counts: { ...counts }, mostCommon, mostCount: counts[mostCommon],
+      log: detections.slice(0, 40), video: videoResult, ai: null
+    };
+  }
+
+  // Snapshot sent to POST /report. Shape is what genai/report.py's clean_snapshot() reads:
+  //   scans, bins{<bin>:{count, fill_pct}}, classes{}, avg_confidence, min_confidence_setting, recent[]
+  function buildSnapshot() {
+    const bins = {};
+    categories.forEach(c => {
+      bins[c] = { count: counts[c], fill_pct: Math.min(100, Math.round(counts[c] / BIN_CAPACITY * 100)) };
+    });
+    return {
+      scans: Math.max(scanCount, counts.total ? 1 : 0),
+      bins,
+      classes: { ...classCounts },
+      avg_confidence: confN ? Math.round(confSum / confN * 1000) / 1000 : null,
+      min_confidence_setting: parseFloat(sldConf.value),
+      recent: detections.slice(0, 10).map(d => ({ class: d.label || d.category, bin: d.category, confidence: d.confidence }))
+    };
+  }
+
+  // The report payload shape is defined by genai/report.py; accept the usual text fields.
+  function reportText(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    if (Array.isArray(v)) return v.map(reportText).filter(Boolean).join('\n');
+    if (typeof v === 'object') {
+      for (const k of ['report', 'text', 'markdown', 'summary', 'content', 'body']) {
+        if (v[k]) { const t = reportText(v[k]); if (t) return t; }
+      }
+      return Object.entries(v).filter(([k]) => !['status', 'source', 'provider', 'engine', 'model', 'generated'].includes(k))
+        .map(([k, x]) => `${k}: ${reportText(x)}`).join('\n');
+    }
+    return String(v);
+  }
+
+  // tiny markdown renderer (headings, bullets, **bold**) - everything is escaped first
+  function mdLite(src) {
+    const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+    const out = []; let list = false;
+    String(src).split(/\r?\n/).forEach(line => {
+      const t = line.trim();
+      const li = t.match(/^[-*\u2022]\s+(.*)/);
+      if (li) { if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + inline(li[1]) + '</li>'); return; }
+      if (list) { out.push('</ul>'); list = false; }
+      if (!t) return;
+      const h = t.match(/^#{1,6}\s+(.*)/);
+      out.push(h ? '<h3 style="margin:12px 0 6px; color:var(--text-main);">' + inline(h[1]) + '</h3>' : '<p>' + inline(t) + '</p>');
+    });
+    if (list) out.push('</ul>');
+    return out.join('');
+  }
+
+  function localSummaryHtml(rep) {
+    const v = rep.video;
+    return `
+      <h3 style="margin-top:0; color:var(--text-main);">Facility Intake Summary</h3>
+      <p>Over the current session, <strong>${rep.total} total items</strong> were processed.</p>
+      <ul>
+        <li><strong>Dominant Material:</strong> The most frequent material was <strong>${rep.mostCommon.toUpperCase()}</strong> (${rep.mostCount} items). Consider optimizing downstream baling for this material type.</li>
+        <li><strong>Hazard Assessment:</strong> ${rep.counts.hazardous > 0 ? `Detected <span style="color:var(--hazardous); font-weight:700;">${rep.counts.hazardous} hazardous items</span>. Review sorting line safety protocols.` : 'No critical hazards detected during this session.'}</li>
+        ${v ? `<li><strong>Video Analysis:</strong> ${esc(v.name)} was analysed at ${v.rate}x slow-motion and ${v.total} item(s) were identified${v.items.length ? ' (' + v.items.map(g => g.count + ' ' + esc(g.label)).join(', ') + ')' : ''}.</li>` : ''}
+      </ul>`;
+  }
+
+  document.getElementById('genReport').addEventListener('click', async () => {
+    const btn = document.getElementById('genReport');
+    const idleHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10" stroke-dasharray="30"></circle></svg> Processing...`;
+
+    const rep = lastReport = buildReport();
+    let source = '', model = '', warning = '', problem = '';
+    try {
+      const res = await fetch(API.report, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildSnapshot())
+      });
+      const data = await res.json().catch(() => null);
+      console.log('[report] HTTP', res.status, data);
+      if (!res.ok || !data || data.status !== 'success') throw new Error((data && data.message) || `Server error (${res.status})`);
+      rep.ai = (typeof data.report === 'string' ? data.report : reportText(data)).trim() || null;
+      source = data.source || ''; model = data.model || ''; warning = data.warning || '';
+      if (!rep.ai) problem = 'the server returned an empty report';
+    } catch (err) {
+      console.error(err);
+      problem = err.message;
+      if (err instanceof TypeError) { backendOk = false; setStatus('Backend offline', false); problem = 'cannot reach the server'; }
+    }
+
+    const warnHtml = warning ? `<p style="color:#b45309; font-weight:600; margin-top:0;">${esc(warning)}</p>` : '';
+    document.getElementById('reportBox').innerHTML = rep.ai
+      ? `<h3 style="margin-top:0; color:var(--text-main);">Facility Intake Summary</h3>${warnHtml}${mdLite(rep.ai)}`
+      : `<p style="color:#b45309; font-weight:600;">Report unavailable (${esc(problem)}). Showing a local summary instead.</p>${localSummaryHtml(rep)}`;
+    const via = rep.ai ? (source === 'gemini' ? `Gemini${model ? ' (' + model + ')' : ''}` : 'offline summary') : 'local summary';
+    document.getElementById('reportMeta').textContent = `Generated: ${rep.generated.toLocaleString()} via ${via}`;
+    savePdfBtn.hidden = false;           // the PDF button only appears once a report exists
+    btn.disabled = false;
+    btn.innerHTML = idleHtml;
+  });
+
+  savePdfBtn.addEventListener('click', async () => {
+    const rep = lastReport; if (!rep) return;
+    const idleHtml = savePdfBtn.innerHTML;
+    savePdfBtn.disabled = true; savePdfBtn.textContent = 'Building PDF...';
+    try {
+      if (!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+      const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 48;
+      let y = M;
+      const clean = s => String(s).replace(/[^\x20-\x7E]/g, '');
+      const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+      const need = h => { if (y + h > H - M) { doc.addPage(); y = M; } };
+      const text = (str, o = {}) => {
+        const { size = 11, bold = false, color = [31, 41, 55], gap = 6, indent = 0 } = o;
+        doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(size); doc.setTextColor(...color);
+        doc.splitTextToSize(clean(str), W - 2 * M - indent).forEach(line => {
+          need(size * 1.4); doc.text(line, M + indent, y + size); y += size * 1.4;
+        });
+        y += gap;
+      };
+      const heading = s => { need(34); y += 8; text(s, { size: 14, bold: true, gap: 4 });
+        doc.setDrawColor(209, 213, 219); doc.line(M, y, W - M, y); y += 10; };
+
+      // title bar
+      doc.setFillColor(17, 24, 39); doc.rect(0, 0, W, 78, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+      doc.text('Smart MRF - Facility Intake Report', M, 38);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      doc.text('Generated: ' + clean(rep.generated.toLocaleString()), M, 58);
+      y = 104;
+
+      text(`Over the current session, ${rep.total} total items were processed.`, { size: 12 });
+      if (rep.ai) {
+        rep.ai.split(/\r?\n/).forEach(l => {
+          const t = l.replace(/^#{1,6}\s*/, '').replace(/\*+/g, '').trim();
+          if (t) text(t, { indent: /^[-*\u2022]\s/.test(t) ? 12 : 0, gap: 3 });
+        });
+      } else {
+        text(`Dominant material: ${rep.mostCommon.toUpperCase()} (${rep.mostCount} items). Consider optimizing downstream baling for this material type.`, { indent: 12 });
+        text(rep.counts.hazardous > 0
+          ? `Hazard assessment: ${rep.counts.hazardous} hazardous item(s) detected. Review sorting line safety protocols.`
+          : 'Hazard assessment: no critical hazards detected during this session.', { indent: 12 });
+        text('Efficiency: camera stream capture rate and AI confidence levels are operating within standard parameters.', { indent: 12 });
+      }
+
+      heading('Material counts');
+      Object.keys(colors).forEach(cat => {
+        need(20);
+        const n = rep.counts[cat], pct = rep.total ? Math.round(n / rep.total * 100) : 0;
+        doc.setFillColor(...rgb(colors[cat])); doc.rect(M, y + 2, 12, 12, 'F');
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(31, 41, 55);
+        doc.text(cat.charAt(0).toUpperCase() + cat.slice(1), M + 20, y + 12);
+        doc.text(String(n), M + 200, y + 12);
+        doc.text(pct + '%', M + 260, y + 12);
+        y += 20;
+      });
+
+      if (rep.video) {
+        const v = rep.video;
+        heading('Video analysis');
+        text(`File: ${v.name}`, { gap: 2 });
+        text(`Length: ${isFinite(v.duration) ? v.duration.toFixed(1) + ' s' : 'n/a'}   |   Playback: ${v.rate}x slow-motion${v.stoppedEarly ? '   |   stopped early' : ''}`, { gap: 2 });
+        text(`Items identified: ${v.total}`, { gap: 6 });
+        v.items.forEach(g => text(`${g.label} x${g.count}  ->  ${g.category ? g.category.toUpperCase() : 'not sorted (no matching bin)'}`, { indent: 12, gap: 2 }));
+      }
+
+      heading('Recent detections' + (rep.log.length ? ` (latest ${rep.log.length})` : ''));
+      if (!rep.log.length) text('No items detected yet.', { color: [107, 114, 128] });
+      else {
+        need(20);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(55, 65, 81);
+        doc.text('Time', M, y + 10); doc.text('Category', M + 90, y + 10); doc.text('Item', M + 190, y + 10);
+        doc.text('Confidence', M + 330, y + 10); doc.text('Source', M + 420, y + 10); y += 18;
+        rep.log.forEach(d => {
+          need(16);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(31, 41, 55);
+          doc.text(clean(d.time), M, y + 10);
+          doc.setTextColor(...rgb(colors[d.category])); doc.text(d.category.toUpperCase(), M + 90, y + 10);
+          doc.setTextColor(31, 41, 55);
+          doc.text(clean(d.label || '-'), M + 190, y + 10);
+          doc.text(Math.round(d.confidence * 100) + '%', M + 330, y + 10);
+          doc.text(d.source === 'video' ? 'video' : 'scan', M + 420, y + 10);
+          y += 15;
+        });
+      }
+
+      const pages = doc.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(156, 163, 175);
+        doc.text(`Page ${i} of ${pages}`, W - M, H - 24, { align: 'right' });
+      }
+      const p = n => String(n).padStart(2, '0'), d = rep.generated;
+      doc.save(`Smart-MRF-Report-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.pdf`);
+    } catch (err) {
+      console.error(err);
+      alert('Could not build the PDF (the PDF library may have failed to load - check your internet connection).');
+    } finally {
+      savePdfBtn.disabled = false; savePdfBtn.innerHTML = idleHtml;
+    }
+  });
+
+  // =====================================================================
+  //  Exit: stop camera/video, shut the Flask server down, close the page
+  // =====================================================================
+  document.getElementById('exitBtn').addEventListener('click', async () => {
+    if (!confirm('Exit Smart MRF?\n\nThis stops the camera and shuts down the server.')) return;
+    const btn = document.getElementById('exitBtn');
+    btn.disabled = true;
+    stopCam(); stopVideoNow();
+    let serverStopped = true;
+    try {
+      const res = await fetch('/shutdown', { method: 'POST', headers: { 'X-Requested-With': 'smart-mrf' } });
+      if (!res.ok) serverStopped = false;
+    } catch (err) { /* the server may drop the connection as it exits - that's fine */ }
+
+    const ov = document.createElement('div');
+    ov.setAttribute('role', 'alert');
+    ov.style.cssText = 'position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:#111827; color:#fff; text-align:center; padding:24px; font-family:inherit;';
+    ov.innerHTML = serverStopped
+      ? '<h1 style="color:#fff;">Smart MRF has shut down</h1><p style="font-size:18px; margin:0;">The camera and the server are stopped. You can close this tab.</p>'
+      : '<h1 style="color:#fff;">Could not stop the server</h1><p style="font-size:18px; margin:0;">Press Ctrl+C in the terminal running app.py.</p>';
+    document.body.appendChild(ov);
+    window.close();   // only works if the browser allows it; the message above covers the rest
+  });
+});
+</script>
+<script>
+/* Tooltip text for the counter tiles - edit these lists to match your model's classes */
+(function () {
+  const TILE_INFO = {
+    total:     ['All items scanned', 'Every item detected, whichever bin it ends up in.'],
+    plastic:   ['Plastic', 'Bottles, jugs, food containers, cups, plastic bags and film wrap.'],
+    paper:     ['Paper', 'Cardboard, newspaper, magazines, office paper and cartons.'],
+    glass:     ['Glass', 'Glass bottles and jars (broken glass too).'],
+    metal:     ['Metal', 'Aluminium and tin cans, foil, lids and scrap metal.'],
+    hazardous: ['Hazardous', 'Batteries, aerosol cans, light bulbs, electronics and chemicals.']
+  };
+  document.querySelectorAll('.tile').forEach(t => {
+    const key = Object.keys(TILE_INFO).find(k => t.classList.contains(k));
+    if (!key) return;
+    const tip = document.createElement('div');
+    tip.className = 'tip'; tip.id = 'tip-' + key; tip.setAttribute('role', 'tooltip');
+    tip.innerHTML = '<b></b><span></span>';
+    tip.firstChild.textContent = TILE_INFO[key][0];
+    tip.lastChild.textContent = TILE_INFO[key][1];
+    t.appendChild(tip);
+    t.tabIndex = 0;
+    t.setAttribute('aria-describedby', tip.id);
+  });
+})();
+</script>
+<script>
+(function () {
+  const modal = document.getElementById('aiModal'), openBtn = document.getElementById('genReport');
+  const closeBtn = document.getElementById('aiClose'), box = document.getElementById('reportBox');
+  const open = () => { modal.hidden = false; closeBtn.focus(); };
+  const close = () => { modal.hidden = true; openBtn.focus(); };
+  openBtn.addEventListener('click', () => {
+    box.innerHTML = '<p style="text-align:center; margin:0;">Generating AI summary...</p>';
+    open();
+  });
+  closeBtn.addEventListener('click', close);
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
 })();
 </script>
 </body>

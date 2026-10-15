@@ -2,7 +2,8 @@
 
 Run:  python app.py      ->  http://127.0.0.1:5000
 
-Endpoints: GET /, GET /health, POST /predict (image), POST /report (twin snapshot JSON).
+Endpoints: GET /, GET /health, POST /predict (image), POST /report (twin snapshot JSON),
+POST /shutdown (stops the server; used by the Exit button).
 """
 import base64
 import os
@@ -109,6 +110,7 @@ def predict():
     except ValueError:
         conf = DEFAULT_CONF
     conf = min(max(conf, 0.05), 0.95)
+    live = request.form.get("live") == "1"  # live camera mode: boxes only, skip the annotated image
 
     # Decode in memory (no temp file needed).
     img = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_COLOR)
@@ -118,7 +120,7 @@ def predict():
     t0 = time.perf_counter()
     with infer_lock:
         result = model.predict(img, conf=conf, verbose=False)[0]
-        annotated = result.plot()  # BGR image with boxes, labels, confidences
+        annotated = None if live else result.plot()  # BGR image with boxes, labels, confidences
     inference_ms = round((time.perf_counter() - t0) * 1000)
 
     detections = []
@@ -142,6 +144,17 @@ def predict():
             )
             class_breakdown[name] = class_breakdown.get(name, 0) + 1
             bin_breakdown[bin_name] = bin_breakdown.get(bin_name, 0) + 1
+
+    if live:  # fast path for the live camera view: just the boxes
+        return jsonify(
+            {
+                "status": "success",
+                "total_count": len(detections),
+                "detections": detections,
+                "hazardous": bin_breakdown.get(HAZARDOUS_BIN, 0) > 0,
+                "inference_ms": inference_ms,
+            }
+        )
 
     ok, buf = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
     if not ok:
@@ -172,6 +185,23 @@ def report():
         return error("Send a JSON snapshot of the twin state.", 400)
     result = generate_report(snapshot)
     return jsonify({"status": "success", **result})
+
+
+@app.post("/shutdown")
+def shutdown():
+    """Stop the whole server (called by the Exit button in the UI).
+
+    Only accepted from this machine, and only with the custom header the page sends.
+    A custom header makes other websites unable to trigger it (browsers block it cross-origin).
+    """
+    if request.remote_addr not in ("127.0.0.1", "::1"):
+        return error("Shutdown is only allowed from the local machine.", 403)
+    if request.headers.get("X-Requested-With") != "smart-mrf":
+        return error("Missing shutdown header.", 400)
+    print("[smart-mrf] shutdown requested from the UI - exiting.")
+    # Exit shortly after the response is sent so the browser receives it first.
+    threading.Timer(0.5, lambda: os._exit(0)).start()
+    return jsonify({"status": "success", "message": "Server shutting down."})
 
 
 if __name__ == "__main__":
