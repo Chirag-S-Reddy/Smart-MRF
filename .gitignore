@@ -31,6 +31,8 @@ data/*/labels/
 runs/
 smart-mrf-runs/
 *.pt
+!best.pt
+!last.pt
 *.onnx
 *.engine
 

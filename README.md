@@ -63,9 +63,9 @@ git clone https://github.com/Chirag-S-Reddy/Smart-MRF.git
 cd Smart-MRF
 ```
 
-**Download the model weights (required)**
+**Model weights**
 
-The trained weights are not stored in this repository (`*.pt` files are gitignored). Download `best.pt` from the project's Google Drive folder, at `smart-mrf-runs/v1/weights/best.pt`, and place it in the project root next to `app.py`. If you do not have access, ask the team, or train your own model using the notebooks in `notebooks/`.
+The trained weights are included in the repository root: `best.pt` (best checkpoint, used by default) and `last.pt` (final-epoch checkpoint). Both sit next to `app.py`, so no extra download is needed. If you download only part of the repo and `best.pt` is missing, `app.py` falls back to `last.pt`, or you can point to any weights file with the `MODEL_PATH` setting below. You can also train your own model using the notebooks in `notebooks/` or the [Colab notebook](https://colab.research.google.com/drive/11z9iRRCZEEj_Qri5rhNmfURZ3SfXYd21?usp=sharing).
 
 ## Setup
 
@@ -80,7 +80,7 @@ source venv/bin/activate          # Windows PowerShell: .\venv\Scripts\Activate.
 pip install -r requirements.txt
 ```
 
-Make sure `best.pt` is in the project root, then start the app:
+Make sure `best.pt` (or `last.pt`) is in the project root, then start the app:
 
 ```bash
 python app.py
@@ -125,6 +125,8 @@ Smart-MRF/
 ├── README.md
 ├── LICENSE.txt
 ├── requirements.txt
+├── best.pt               # trained YOLO11n weights (best checkpoint)
+├── last.pt               # trained YOLO11n weights (last epoch)
 ├── app.py                # Flask backend (/, /health, /predict)
 ├── yolo_detect.py        # command line detection on images, video or camera
 ├── templates/
@@ -144,7 +146,13 @@ Training was done in Google Colab on a free T4 GPU, not in this repo. The merged
 yolo detect train data=combined/data.yaml model=yolo11n.pt epochs=40 imgsz=640 batch=32 patience=10
 ```
 
-The full workflow is in `notebooks/CV_Training_Notebook.ipynb`, and the exact settings used are in `train/args.yaml`. Datasets and weights are not committed. Weights are kept on Google Drive.
+The full workflow is in `notebooks/CV_Training_Notebook.ipynb`, and the exact settings used are in `train/args.yaml`.
+
+**Run it in Colab:** [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/11z9iRRCZEEj_Qri5rhNmfURZ3SfXYd21?usp=sharing)
+
+Direct link: https://colab.research.google.com/drive/11z9iRRCZEEj_Qri5rhNmfURZ3SfXYd21?usp=sharing
+
+In Colab, choose **Runtime > Change runtime type > T4 GPU** before running the cells. The datasets are not committed. The resulting weights (`best.pt` and `last.pt`) are committed in the repository root.
 
 ## Credits and attributions
 
