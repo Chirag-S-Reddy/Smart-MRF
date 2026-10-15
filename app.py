@@ -1,6 +1,8 @@
 """Smart MRF Digital Twin - Flask backend.
 
 Run:  python app.py      ->  http://127.0.0.1:5000
+
+Endpoints: GET /, GET /health, POST /predict (image), POST /report (twin snapshot JSON).
 """
 import base64
 import os
@@ -12,6 +14,10 @@ import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
 from ultralytics import YOLO
+
+from genai.report import generate_report, load_env, report_status
+
+load_env()  # reads GEMINI_API_KEY etc. from .env (existing environment variables win)
 
 BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_DIR = BASE_DIR / "static" / "uploads"
@@ -81,6 +87,7 @@ def health():
             "model": MODEL_PATH.name,
             "classes": list(model.names.values()),
             "default_conf": DEFAULT_CONF,
+            "report": report_status(),
         }
     )
 
@@ -155,6 +162,16 @@ def predict():
             "image_base64": "data:image/jpeg;base64," + base64.b64encode(jpg_bytes).decode(),
         }
     )
+
+
+@app.post("/report")
+def report():
+    """Generate an operator report from a digital-twin snapshot (JSON body)."""
+    snapshot = request.get_json(silent=True)
+    if not isinstance(snapshot, dict):
+        return error("Send a JSON snapshot of the twin state.", 400)
+    result = generate_report(snapshot)
+    return jsonify({"status": "success", **result})
 
 
 if __name__ == "__main__":
