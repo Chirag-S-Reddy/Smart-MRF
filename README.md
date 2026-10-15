@@ -33,13 +33,14 @@ Each class maps to a twin bin: `plastic` and `plastic_bag` go to **plastic**, `p
 | Dataset merge (3 sources to 8 classes) | Done |
 | YOLO11n training (Colab, 40 epochs) | Done |
 | Flask backend and web dashboard | Done |
-| Generative AI report (`genai/report.py`, `/report`) | Done, add a `GEMINI_API_KEY` to enable |
+| Generative AI report (`genai/report.py`, `/report`) | Done |
 | Command line detection (`yolo_detect.py`) | Done |
-| Digital twin state tracking (`twin/state.py`) | Planned (file is a placeholder) |
-| Video tracking with persistent IDs | Planned |
+| Digital twin state tracking (`twin/state.py`) | Done |
+| Video tracking with persistent IDs | Done |
 
 ## Results
 
+**1. Initial Model
 Validation metrics after 40 epochs, from `train/results.csv`:
 
 | Precision | Recall | mAP@50 | mAP@50-95 |
@@ -47,6 +48,11 @@ Validation metrics after 40 epochs, from `train/results.csv`:
 | 0.700 | 0.594 | 0.659 | 0.448 |
 
 The best mAP@50 (0.660) was at epoch 33. Training curves, the confusion matrix and sample predictions are in the `train/` folder. These numbers come from the validation split of the merged dataset, not from real belt footage.
+
+**2. Final Version
+
+| Precision | Recall | mAP@50 | mAP@50-95 |
+|---|---|---|---|
 
 ## Download
 
@@ -83,10 +89,10 @@ source venv/bin/activate          # Windows PowerShell: .\venv\Scripts\Activate.
 pip install -r requirements.txt
 ```
 
-**Add your Gemini API key (for AI reports)**
+**Add your Gemini API key (for AI reports in case the provided one doesn't work)**
 
 1. Create a free key at https://aistudio.google.com/apikey
-2. Copy the example file and paste your key into it:
+2. Copy the example file and paste your key into it: 
 
 ```bash
 cp .env.example .env              # Windows PowerShell: Copy-Item .env.example .env
