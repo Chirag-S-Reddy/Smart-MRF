@@ -44,7 +44,7 @@ Each class maps to a twin bin: `plastic` and `plastic_bag` go to **plastic**, `p
 
 ## Results
 
-**1. Initial model**
+**Initial model (YOLO11n)**
 
 Validation metrics after 40 epochs, from `train/results.csv`:
 
@@ -53,10 +53,6 @@ Validation metrics after 40 epochs, from `train/results.csv`:
 | 0.700 | 0.594 | 0.659 | 0.448 |
 
 The best mAP@50 (0.660) was at epoch 33. Training curves, the confusion matrix and sample predictions are in the `train/` folder. These numbers come from the validation split of the merged dataset, not from real belt footage.
-
-**2. Final version**
-
-Results to be added after the final training run and evaluation.
 
 ## Download
 
