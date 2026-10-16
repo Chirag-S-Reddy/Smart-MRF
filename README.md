@@ -54,6 +54,16 @@ Validation metrics after 40 epochs, from `train/results.csv`:
 
 The best mAP@50 (0.660) was at epoch 33. Training curves, the confusion matrix and sample predictions are in the `train/` folder. These numbers come from the validation split of the merged dataset, not from real belt footage.
 
+**Final model (YOLO11s)**
+
+Validation metrics after 94 epochs, from the training `results.csv`:
+
+| Precision | Recall | mAP@50 | mAP@50-95 |
+|---|---|---|---|
+| 0.682 | 0.608 | 0.664 | 0.466 |
+
+The best mAP@50 (0.683) was at epoch 74. As with the initial model, these numbers come from the validation split of the merged dataset, not from real belt footage.
+
 ## Download
 
 You can get the project in either of two ways.
