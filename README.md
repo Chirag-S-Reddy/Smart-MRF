@@ -75,13 +75,12 @@ Each class maps to a twin bin: `plastic` and `plastic_bag` go to **plastic**, `p
 | Dataset merge (3 sources to 8 classes) | Done |
 | YOLO11n training (Colab, 40 epochs) | Done |
 | Flask backend and web dashboard | Done |
-| 3D conveyor digital twin (counts, bins, hazard alert, fill levels) | Done, runs in the browser (`index.html`) |
+| 3D conveyor digital twin (counts, bins, hazard alert, fill levels) | Done |
 | Camera, live detection and video upload | Done |
 | Video tracking with persistent IDs | Done |
 | Generative AI report (`genai/report.py`, `/report`) with PDF export | Done |
 | Unit tests for the report module (`tests/`) | Done |
 | Command line detection (`yolo_detect.py`) | Done |
-| Server-side twin module (`twin/state.py`) | Placeholder, currently empty |
 
 ## Results
 
