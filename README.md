@@ -4,6 +4,48 @@ Hackathon project for **Problem Statement 06: Smart Recycling Assistant**.
 
 Smart MRF detects waste items in images, camera frames and video from a Material Recovery Facility (MRF) using a YOLO11 model, sorts each detection into a recycling bin, and shows the result in a web-based digital twin with a 3D conveyor belt. Hazardous items (batteries and aerosols) raise an alert, and generative AI (Google Gemini) writes a plain-language report with recommendations for plant operators.
 
+## Demo
+
+All demo material (dashboard screenshots and screen recordings of the system working) lives in the [`demo/`](demo/) folder of this repository, and the sections below read straight from it. Clone or download the repo to get the files along with the code.
+
+### What the demo shows
+
+1. **Ready state:** the dashboard opens with an empty 3D conveyor and five empty bins (plastic, paper, glass, metal, hazardous).
+2. **Detection:** you upload an image or a video, take a camera snapshot, or switch on live detection. The Flask backend runs the YOLO11 model and returns boxes, classes and confidences.
+3. **Digital twin:** every confirmed item rides the 3D conveyor and drops into its bin. Counts per class, bin totals, fill levels, and a recent-detections log update as items arrive.
+4. **Hazard alert:** a battery or aerosol is sent to the hazardous bin and raises an alert banner.
+5. **AI Summary:** one click sends a snapshot of the twin to Gemini (or the offline summary if there is no key) and returns a report for plant operators, which can be saved as a PDF.
+
+### Dashboard screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="demo/01_ready_state.png" alt="Dashboard ready state with empty twin and five bins" width="420"><br><sub>1. Ready state: empty twin, five bins</sub></td>
+    <td align="center"><img src="demo/06_ai_summary.png" alt="AI Summary report panel" width="420"><br><sub>2. AI Summary report for operators</sub></td>
+  </tr>
+</table>
+
+### Demo videos
+
+| Video | What it shows |
+|---|---|
+| [`demo/demo_live_camera.mp4`](demo/demo_live_camera.mp4) | Live camera detection with boxes drawn over the feed |
+| [`demo/demo_video_tracking.mp4`](demo/demo_video_tracking.mp4) | Video upload with persistent item IDs, each item counted once |
+
+GitHub does not always play videos stored in the repo inside the README. If a video does not play inline, click its link and use **Download** or **View raw**, or open the file from the `demo/` folder after cloning.
+
+### Demo folder contents
+
+```
+demo/
+├── 01_ready_state.png
+├── 06_ai_summary.png
+├── demo_live_camera.mp4
+└── demo_video_tracking.mp4
+```
+
+To add or replace demo material, put the file in `demo/` and update its path in this section. Keep videos short (under about 2 minutes) so the repo stays small, and note that GitHub rejects single files over 100 MB.
+
 ## How it works
 
 ```
@@ -168,6 +210,7 @@ Smart-MRF/
 │   ├── index.html           # web dashboard and 3D digital twin
 │   └── Test_Index.html      # earlier dashboard version used for testing
 ├── static/uploads/          # latest annotated image written by the backend
+├── demo/                    # dashboard screenshots and demo videos used in the Demo section
 ├── genai/
 │   └── report.py            # Gemini report builder + offline fallback
 ├── tests/
