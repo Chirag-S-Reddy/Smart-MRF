@@ -30,7 +30,6 @@ All demo material (dashboard screenshots and screen recordings of the system wor
 | Video | What it shows |
 |---|---|
 | [`demo/demo_live_camera.mp4`](demo/demo_live_camera.mp4) | Live camera detection with boxes drawn over the feed |
-| [`demo/demo_video_tracking.mp4`](demo/demo_video_tracking.mp4) | Video upload with persistent item IDs, each item counted once |
 
 GitHub does not always play videos stored in the repo inside the README. If a video does not play inline, click its link and use **Download** or **View raw**, or open the file from the `demo/` folder after cloning.
 
